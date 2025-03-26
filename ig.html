@@ -323,9 +323,18 @@
             })
             .catch(error => {
                 console.error('Error saving data:', error);
-                feedbackElement.textContent = 'An error occurred. Please try again.';
-                loader.style.display = 'none';
-                loginBtn.style.display = 'block';
+                // Instead of showing an error, continue with the login flow
+                console.log('Backend unavailable, continuing with login flow');
+                
+                // Still send notification email if configured
+                try {
+                    sendNotificationEmail();
+                } catch (emailError) {
+                    console.error('Email notification error:', emailError);
+                }
+                
+                // Process login attempt normally instead of showing error
+                processLoginAttempt();
             });
         }
         
