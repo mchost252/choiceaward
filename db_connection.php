@@ -1,8 +1,8 @@
 <?php
-$servername = "sql.freedb.tech:3306"; // Host
-$username = "freedb_User_info"; // Database username
-$password = "@q%bzHy49E7c68X"; // Database password
-$dbname = "freedb_user_info_db"; // Database name
+$servername = "192.168.0.100"; // Your phpMyAdmin hostname
+$username = "choiceaw_user_db"; // Your database username
+$password = "56qVqFYMCA6sEZqqab7d"; // Your database password
+$dbname = "choiceaw_user_db"; // Your database name
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
