@@ -1,23 +1,23 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import fs from 'fs';
+import path from 'path';
 
-export default function Home() {
-  const router = useRouter();
+// This gets called at build time
+export async function getStaticProps() {
+  const filePath = path.join(process.cwd(), 'public', 'index.html');
+  const htmlContent = fs.readFileSync(filePath, 'utf8');
   
-  useEffect(() => {
-    // Instead of automatic redirect, let's redirect to the landing page
-    router.push('/index.html');
-  }, [router]);
+  return {
+    props: {
+      htmlContent
+    }
+  };
+}
 
+export default function Home({ htmlContent }) {
+  // Use dangerouslySetInnerHTML to render the static HTML
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      Loading...
-    </div>
+    <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
   );
 } 
