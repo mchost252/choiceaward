@@ -1,65 +1,47 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+import Head from 'next/head';
 
 export default function TestSupabase() {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tables, setTables] = useState([]);
-  const [activeTable, setActiveTable] = useState('users');
-
-  // List all available tables in the database
-  const listTables = async () => {
-    try {
-      console.log('Listing available tables...');
-      const { data, error } = await supabase
-        .from('pg_catalog.pg_tables')
-        .select('tablename')
-        .eq('schemaname', 'public');
-        
-      if (error) throw error;
-      
-      const tableNames = data.map(t => t.tablename);
-      console.log('Available tables:', tableNames);
-      setTables(tableNames);
-      
-      // If 'users' doesn't exist but we found other tables, use the first one
-      if (tableNames.length > 0 && !tableNames.includes('users')) {
-        setActiveTable(tableNames[0]);
-      }
-    } catch (err) {
-      console.error('Error listing tables:', err);
-    }
-  };
-
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(null);
+  const [directApiData, setDirectApiData] = useState(null);
+  const [configStatus, setConfigStatus] = useState({});
+  
   useEffect(() => {
     async function fetchData() {
       try {
-        // First try to get a list of tables
-        await listTables();
+        // 1. Check if Supabase environment variables are set
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
         
-        console.log(`Testing Supabase connection to table: ${activeTable}`);
+        setConfigStatus({
+          supabaseUrl: supabaseUrl ? 'Set ✓' : 'Missing ✗',
+          supabaseAnonKey: supabaseAnonKey ? 'Set ✓' : 'Missing ✗',
+        });
         
-        // Direct SQL query to check for all tables 
-        const { data: sqlData, error: sqlError } = await supabase
-          .rpc('list_all_tables');
-          
-        if (!sqlError) {
-          console.log('All tables via SQL:', sqlData);
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase configuration is incomplete');
         }
         
-        // Check if we can connect to Supabase with the specified table
-        const { data, error } = await supabase
-          .from(activeTable)
+        // 2. Try to fetch data directly using the client
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const { data: supabaseData, error: supabaseError } = await supabase
+          .from('users')
           .select('*')
-          .limit(10);
+          .order('login_time', { ascending: false });
           
-        if (error) throw error;
+        if (supabaseError) throw new Error(`Supabase client error: ${supabaseError.message}`);
+        setData(supabaseData);
         
-        console.log(`Data received from ${activeTable}:`, data);
-        setData(data);
+        // 3. Try to fetch data via our API endpoint
+        const apiRes = await fetch('/api/direct-query');
+        const apiData = await apiRes.json();
+        setDirectApiData(apiData);
+        
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Error in test-supabase:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -67,153 +49,75 @@ export default function TestSupabase() {
     }
     
     fetchData();
-  }, [activeTable]);
-
+  }, []);
+  
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Supabase Connection Test</h1>
+    <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: '0 auto' }}>
+      <Head>
+        <title>Supabase Connection Test</title>
+      </Head>
       
-      <div style={{ marginBottom: '20px' }}>
-        <h3>Connection Information</h3>
-        <div><strong>URL:</strong> {supabase.supabaseUrl}</div>
-        <div><strong>Current Table:</strong> {activeTable}</div>
-        
-        <h3>Available Tables</h3>
-        {tables.length === 0 ? (
-          <p>No tables found or unable to list tables.</p>
-        ) : (
-          <div>
-            {tables.map(table => (
-              <button 
-                key={table} 
-                onClick={() => setActiveTable(table)}
-                style={{
-                  margin: '5px',
-                  padding: '5px 10px',
-                  backgroundColor: activeTable === table ? '#4caf50' : '#f1f1f1',
-                  color: activeTable === table ? 'white' : 'black',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                {table}
-              </button>
-            ))}
-          </div>
-        )}
+      <h1>Supabase Connection Test</h1>
+      <p>This page helps diagnose issues with Supabase connections and data fetching.</p>
+      
+      <div style={{ marginTop: '2rem', background: '#f8f9fa', padding: '1rem', borderRadius: '5px' }}>
+        <h2>Configuration Status</h2>
+        <pre>{JSON.stringify(configStatus, null, 2)}</pre>
       </div>
       
-      {loading ? (
-        <p>Loading...</p>
-      ) : error ? (
-        <div style={{ color: 'red' }}>
+      {loading && <p style={{ marginTop: '2rem' }}>Loading data...</p>}
+      
+      {error && (
+        <div style={{ marginTop: '2rem', background: '#fee', padding: '1rem', borderRadius: '5px', border: '1px solid #f88' }}>
           <h2>Error</h2>
           <p>{error}</p>
-          
-          <button 
-            onClick={() => {
-              setLoading(true);
-              setError(null);
-              fetchData();
-            }}
-            style={{
-              padding: '10px',
-              backgroundColor: '#f44336',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginTop: '10px'
-            }}
-          >
-            Try Again
-          </button>
-        </div>
-      ) : (
-        <div>
-          <h2>Connection Successful</h2>
-          <p>Found {data?.length || 0} records in table '{activeTable}'</p>
-          
-          <h3>Sample Data:</h3>
-          <pre style={{ 
-            backgroundColor: '#f5f5f5', 
-            padding: '15px', 
-            borderRadius: '5px',
-            overflow: 'auto',
-            maxHeight: '400px'
-          }}>
-            {JSON.stringify(data, null, 2)}
-          </pre>
         </div>
       )}
       
-      <div style={{ marginTop: '30px' }}>
-        <h3>Manual Query</h3>
-        <p>Try checking other tables:</p>
-        <button
-          onClick={async () => {
-            try {
-              const { data: todoData, error: todoError } = await supabase
-                .from('todos')
-                .select('*')
-                .limit(5);
-                
-              if (todoError) throw todoError;
-              alert(`Found ${todoData?.length || 0} todo items`);
-              console.log('Todo data:', todoData);
-            } catch (err) {
-              alert(`Error: ${err.message}`);
-            }
-          }}
-          style={{
-            padding: '10px',
-            backgroundColor: '#2196f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginRight: '10px'
-          }}
-        >
-          Check 'todos' Table
-        </button>
-        
-        <button
-          onClick={async () => {
-            try {
-              // Create Stored Function for listing tables if it doesn't exist
-              await supabase.rpc('create_list_tables_function').catch(() => {});
-              
-              // Try to run the direct SQL query
-              const response = await fetch('/api/direct-query', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  query: "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-                }),
-              });
-              
-              const result = await response.json();
-              console.log('Direct SQL result:', result);
-              alert(`Found tables: ${JSON.stringify(result.data || [])}`);
-            } catch (err) {
-              alert(`Error: ${err.message}`);
-            }
-          }}
-          style={{
-            padding: '10px',
-            backgroundColor: '#673ab7',
-            color: 'white',
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          List All Tables (SQL)
-        </button>
+      {!loading && !error && (
+        <>
+          <div style={{ marginTop: '2rem', background: '#f1f8e9', padding: '1rem', borderRadius: '5px', border: '1px solid #c5e1a5' }}>
+            <h2>Supabase Client Data</h2>
+            <p>{data?.length || 0} records found</p>
+            {data?.length > 0 && (
+              <details>
+                <summary>View Sample Data</summary>
+                <pre style={{ maxHeight: '300px', overflow: 'auto' }}>
+                  {JSON.stringify(data.slice(0, 3), null, 2)}
+                </pre>
+              </details>
+            )}
+          </div>
+          
+          <div style={{ marginTop: '2rem', background: '#e3f2fd', padding: '1rem', borderRadius: '5px', border: '1px solid #90caf9' }}>
+            <h2>API Endpoint Data</h2>
+            <pre style={{ maxHeight: '300px', overflow: 'auto' }}>
+              {JSON.stringify(directApiData, null, 2)}
+            </pre>
+          </div>
+          
+          <div style={{ marginTop: '2rem', background: '#fff3e0', padding: '1rem', borderRadius: '5px', border: '1px solid #ffe0b2' }}>
+            <h2>Troubleshooting Steps</h2>
+            <ol style={{ lineHeight: '1.6' }}>
+              <li>If no data appears above, check your Supabase row-level security (RLS) policies</li>
+              <li>Make sure the 'users' table has appropriate permissions for the anon role</li>
+              <li>Verify your database has data in the users table</li>
+              <li>Check Vercel environment variables are properly set</li>
+            </ol>
+            
+            <div style={{ marginTop: '1rem' }}>
+              <h3>RLS Policy Example</h3>
+              <pre style={{ background: '#f5f5f5', padding: '0.5rem', borderRadius: '3px' }}>
+                CREATE POLICY "Public read access" ON "public"."users"
+                FOR SELECT USING (true);
+              </pre>
+            </div>
+          </div>
+        </>
+      )}
+      
+      <div style={{ marginTop: '2rem', borderTop: '1px solid #ddd', paddingTop: '1rem' }}>
+        <p>Return to <a href="/admin" style={{ color: '#3f51b5' }}>Admin Dashboard</a></p>
       </div>
     </div>
   );
