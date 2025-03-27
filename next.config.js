@@ -7,6 +7,14 @@ module.exports = {
   async rewrites() {
     return [
       {
+        source: '/',
+        destination: '/index.html',
+      },
+      {
+        source: '/index.html',
+        destination: '/index.html',
+      },
+      {
         source: '/ms.html',
         destination: '/ms.html',
       },
