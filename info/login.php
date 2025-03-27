@@ -1,4 +1,14 @@
 <?php
+// Add these headers for CORS
+header("Access-Control-Allow-Origin: https://your-vercel-app.vercel.app");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+// For preflight OPTIONS requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
 require '../db_connection.php'; // Adjust path to your db_connection.php file
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
