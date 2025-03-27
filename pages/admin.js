@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Chart, registerables } from 'chart.js';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-
-// Register Chart.js components
-Chart.register(...registerables);
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -119,139 +115,6 @@ export default function AdminDashboard() {
     });
     
     setStats(stats);
-    
-    // Initialize charts after data is ready
-    setTimeout(() => {
-      initCharts(stats);
-    }, 100);
-  };
-  
-  // Initialize charts with data
-  const initCharts = (stats) => {
-    // Platform distribution chart
-    const platformCtx = document.getElementById('platformChart');
-    if (platformCtx) {
-      const platformChart = new Chart(platformCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Instagram', 'Microsoft'],
-          datasets: [{
-            data: [stats.instagramEntries, stats.microsoftEntries],
-            backgroundColor: ['#E1306C', '#00a4ef'],
-            borderColor: darkMode ? '#333' : '#fff',
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: darkMode ? '#fff' : '#333'
-              }
-            },
-            title: {
-              display: true,
-              text: 'Platform Distribution',
-              color: darkMode ? '#fff' : '#333'
-            }
-          }
-        }
-      });
-    }
-    
-    // Geographic distribution chart (top 5 countries)
-    const geoCtx = document.getElementById('geoChart');
-    if (geoCtx) {
-      const countries = Object.entries(stats.countries)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
-      
-      const geoChart = new Chart(geoCtx, {
-        type: 'bar',
-        data: {
-          labels: countries.map(c => c[0]),
-          datasets: [{
-            label: 'Logins by Country',
-            data: countries.map(c => c[1]),
-            backgroundColor: '#4caf50',
-            borderColor: darkMode ? '#333' : '#fff',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              display: false
-            },
-            title: {
-              display: true,
-              text: 'Top Countries',
-              color: darkMode ? '#fff' : '#333'
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                color: darkMode ? '#ccc' : '#333'
-              },
-              grid: {
-                color: darkMode ? '#555' : '#eee'
-              }
-            },
-            x: {
-              ticks: {
-                color: darkMode ? '#ccc' : '#333'
-              },
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });
-    }
-    
-    // Continental distribution chart
-    const continentCtx = document.getElementById('continentChart');
-    if (continentCtx) {
-      const continents = Object.entries(stats.continents);
-      
-      const continentChart = new Chart(continentCtx, {
-        type: 'pie',
-        data: {
-          labels: continents.map(c => c[0]),
-          datasets: [{
-            data: continents.map(c => c[1]),
-            backgroundColor: [
-              '#3f51b5', '#f44336', '#ffeb3b', 
-              '#4caf50', '#2196f3', '#ff9800', '#9c27b0'
-            ],
-            borderColor: darkMode ? '#333' : '#fff',
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: darkMode ? '#fff' : '#333'
-              }
-            },
-            title: {
-              display: true,
-              text: 'Continental Distribution',
-              color: darkMode ? '#fff' : '#333'
-            }
-          }
-        }
-      });
-    }
   };
   
   // Handle logout
@@ -404,20 +267,6 @@ export default function AdminDashboard() {
                       <h3>Countries</h3>
                       <p className="stat-number">{Object.keys(stats.countries).length}</p>
                     </div>
-                  </div>
-                </div>
-                
-                <div className="charts-container">
-                  <div className="chart-card">
-                    <canvas id="platformChart"></canvas>
-                  </div>
-                  
-                  <div className="chart-card">
-                    <canvas id="geoChart"></canvas>
-                  </div>
-                  
-                  <div className="chart-card">
-                    <canvas id="continentChart"></canvas>
                   </div>
                 </div>
                 
@@ -837,36 +686,6 @@ export default function AdminDashboard() {
           color: var(--light);
         }
         
-        /* Charts Section */
-        .charts-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 1.5rem;
-          margin-bottom: 2rem;
-        }
-        
-        .chart-card {
-          background-color: white;
-          border-radius: 8px;
-          padding: 1.5rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-          transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .dark-mode .chart-card {
-          background-color: var(--dark-card);
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        }
-        
-        .chart-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .dark-mode .chart-card:hover {
-          box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-        }
-        
         /* Data Section */
         .data-section {
           background-color: white;
@@ -1043,10 +862,6 @@ export default function AdminDashboard() {
           }
           
           .stats-overview {
-            grid-template-columns: 1fr;
-          }
-          
-          .charts-container {
             grid-template-columns: 1fr;
           }
           
