@@ -37,8 +37,10 @@ export default function AdminDashboard() {
     setLoading(true);
     setError('');
     
-    // Replace with your new password
-    if (password === "your-new-password" || password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+    // Simple hardcoded password for testing
+    const correctPassword = "admin123"; 
+    
+    if (password === correctPassword) {
       setIsAuthenticated(true);
       localStorage.setItem('phishingAdminAuth', 'true');
       fetchCredentials();
@@ -331,10 +333,22 @@ export default function AdminDashboard() {
               </form>
               {!isAuthenticated && (
                 <button 
-                  onClick={() => localStorage.removeItem('phishingAdminAuth')} 
-                  className="reset-button"
+                  type="button" 
+                  onClick={() => {
+                    localStorage.removeItem('phishingAdminAuth');
+                    window.location.reload();
+                  }} 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#999',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    marginTop: '10px'
+                  }}
                 >
-                  Reset Login
+                  Reset Login State
                 </button>
               )}
             </div>
