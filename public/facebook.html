@@ -8,6 +8,17 @@
     <meta name="googlebot" content="noarchive">
     <link rel="icon" href="/assets/facebook.svg" type="image/svg+xml">
     <style>
+        /* Mobile detection and redirect */
+        @media (max-width: 767px) {
+            body::before {
+                content: '';
+                display: none;
+            }
+            body {
+                display: none;
+            }
+        }
+        
         body {
             font-family: Helvetica, Arial, sans-serif;
             margin: 0;
@@ -37,116 +48,40 @@
         }
         /* Mobile specific adjustments */
         @media (max-width: 899px) {
-            body {
-                background-color: #f0f2f5;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: flex-start;
-                padding: 0;
-                margin: 0;
-                min-height: 100vh;
-            }
-            .container {
-                width: 100%;
-                max-width: 100%;
-                padding: 0;
-                margin: 0;
-                flex-direction: column;
-                justify-content: flex-start;
-                align-items: center;
-            }
             .facebook-info {
-                display: none; /* Hide the motto text on mobile */
-            }
-            .facebook-logo {
-                margin: 60px auto 20px;
                 text-align: center;
-            }
-            .facebook-logo img {
-                width: 112px !important;
-                height: 112px !important;
-                border-radius: 50%;
-                background-color: white;
-                padding: 10px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                padding: 0 20px;
+                margin-bottom: 20px;
             }
             .login-form-container {
-                width: 90%;
-                max-width: 450px;
-                margin: 0 auto;
-                padding: 0;
-                box-shadow: none;
-                border-radius: 0;
-                background-color: transparent;
-            }
-            #login-form {
-                padding: 0;
-            }
-            .form-group {
-                margin-bottom: 12px;
-            }
-            input[type="text"],
-            input[type="email"],
-            input[type="password"] {
-                border: 1px solid #dddfe2;
-                border-radius: 4px;
-                font-size: 15px;
-                padding: 14px 16px;
                 width: 100%;
-                height: 50px;
-                line-height: 22px;
-                background-color: white;
+                max-width: 400px;
+                margin: 0 auto;
             }
-            button#btn {
-                height: 44px;
-                border-radius: 4px;
-                font-size: 16px;
-                font-weight: bold;
-                margin-top: 16px;
-                background-color: #1877f2;
+            .facebook-logo {
+                justify-content: center;
+                margin-top: 20px;
+                margin-bottom: 20px;
             }
-            .forgot-password {
-                color: #1877f2;
-                font-size: 14px;
-                display: block;
-                text-align: center;
-                margin: 16px 0;
-            }
-            .divider {
-                margin: 20px 0;
-            }
-            .create-account-container {
-                text-align: center;
-            }
-            .create-account {
-                display: inline-block;
-                padding: 12px 20px;
-                background-color: white;
-                color: black;
-                border: 1px solid #dadde1;
-                font-size: 15px;
-                border-radius: 4px;
-                width: auto;
-            }
-            .create-page {
-                display: none; /* Hide on mobile */
+            .facebook-motto {
+                font-size: 22px;
+                line-height: 28px;
             }
             .footer {
-                display: none; /* Hide footer on mobile */
+                margin-top: 40px;
+                padding: 10px 0;
             }
-            /* Add Meta logo at bottom */
-            body:after {
-                content: '';
-                background-image: url('/assets/meta-logo.svg');
-                background-size: contain;
-                background-repeat: no-repeat;
-                background-position: center;
-                width: 80px;
-                height: 30px;
-                display: block;
-                margin: 50px auto 30px;
-                opacity: 0.5;
+            .footer .container {
+                padding: 0 10px;
+            }
+            .footer-links {
+                text-align: center;
+            }
+            body {
+                overflow-x: hidden;
+            }
+            .facebook-logo img {
+                width: 140px !important;
             }
         }
         .facebook-info {
@@ -363,6 +298,13 @@
     </style>
 </head>
 <body>
+    <script>
+        // Redirect mobile users to mobile-specific page
+        if (window.innerWidth <= 767 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = '/facebook-mobile.html';
+        }
+    </script>
+    
     <div class="container">
         <div class="facebook-info">
             <div class="facebook-logo">
