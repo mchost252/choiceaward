@@ -8,24 +8,14 @@
     <meta name="googlebot" content="noarchive">
     <link rel="icon" href="/assets/facebook.svg" type="image/svg+xml">
     <style>
-        /* Mobile detection and redirect */
-        @media (max-width: 767px) {
-            body::before {
-                content: '';
-                display: none;
-            }
-            body {
-                display: none;
-            }
-        }
-        
+        /* Initial hide to prevent flash */
         body {
+            display: none; /* Will be made visible by script for appropriate device */
             font-family: Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f0f2f5;
             min-height: 100vh;
-            display: flex;
             flex-direction: column;
         }
         .container {
@@ -302,6 +292,9 @@
         // Redirect mobile users to mobile-specific page
         if (window.innerWidth <= 767 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
             window.location.href = '/facebook-mobile.html';
+        } else {
+            // Only for desktop - make body visible
+            document.body.style.display = 'flex';
         }
     </script>
     
