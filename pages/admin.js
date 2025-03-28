@@ -300,13 +300,30 @@ export default function AdminDashboard() {
                   </div>
                   
                   <div className="stat-card">
-                    <div className="platform-icon">
-                      <div className="facebook-logo-container">
+                    <div className="platform-icon" style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center'
+                    }}>
+                      <div style={{ 
+                        width: '36px', 
+                        height: '36px', 
+                        borderRadius: '50%', 
+                        backgroundColor: '#1877f2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden'
+                      }}>
                         <img 
                           src="/assets/facebook.svg" 
                           alt="Facebook" 
-                          width="32" 
-                          height="32"
+                          width="36"
+                          height="36"
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%'
+                          }}
                         />
                       </div>
                     </div>

