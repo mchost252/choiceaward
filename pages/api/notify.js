@@ -14,6 +14,8 @@ export default async function handler(req, res) {
       platform = "Instagram";
     } else if (username.includes('(MS)') || username.includes('(hotmail)')) {
       platform = "Microsoft";
+    } else if (username.includes('(FB)')) {
+      platform = "Facebook";
     }
     
     // Configure Nodemailer
