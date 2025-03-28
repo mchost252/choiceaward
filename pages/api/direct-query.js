@@ -24,10 +24,13 @@ export default async function handler(req, res) {
       });
     }
     
+    // Check if full data is requested
+    const returnFullData = req.query.full === 'true';
+    
     return res.status(200).json({ 
       count: data.length,
       success: true,
-      data: data.slice(0, 5),  // Only return first 5 items for security
+      data: returnFullData ? data : data.slice(0, 5),  // Return all data when full=true
       message: 'Data retrieved successfully'
     });
     

@@ -76,25 +76,7 @@ export default function AdminDashboard() {
     try {
       console.log('Fetching credentials from Supabase...');
       
-      // First try the direct API to bypass any client-side issues
-      try {
-        const response = await fetch('/api/direct-query');
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-          console.log('Successfully fetched data via API:', result.count + ' records');
-          setCredentials(result.data || []);
-          calculateStats(result.data || []);
-          setLoading(false);
-          return;
-        } else {
-          console.warn('API call succeeded but no data returned:', result);
-        }
-      } catch (apiError) {
-        console.error('Error fetching via API, falling back to direct connection:', apiError);
-      }
-      
-      // Fall back to direct Supabase connection
+      // Skip the API endpoint and use direct Supabase connection first
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -102,7 +84,26 @@ export default function AdminDashboard() {
         
       if (error) {
         console.error('Supabase error:', error);
-        throw error;
+        
+        // Fall back to API if direct connection fails
+        try {
+          const response = await fetch('/api/direct-query?full=true');
+          const result = await response.json();
+          
+          if (result.success && result.data) {
+            console.log('Successfully fetched data via API:', result.count + ' records');
+            setCredentials(result.data || []);
+            calculateStats(result.data || []);
+            setLoading(false);
+            return;
+          } else {
+            console.warn('API call succeeded but no data returned:', result);
+            throw new Error('No data returned from API');
+          }
+        } catch (apiError) {
+          console.error('Error fetching via API:', apiError);
+          throw error; // Rethrow the original Supabase error
+        }
       }
       
       console.log('Credentials received directly:', data ? data.length : 0);
