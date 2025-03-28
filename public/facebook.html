@@ -13,10 +13,9 @@
             margin: 0;
             padding: 0;
             background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .container {
             display: flex;
@@ -25,12 +24,26 @@
             width: 100%;
             max-width: 980px;
             padding: 20px;
+            margin: 0 auto;
+            flex: 1;
         }
         @media (min-width: 900px) {
             .container {
                 flex-direction: row;
                 justify-content: space-between;
                 align-items: flex-start;
+                padding-top: 92px;
+            }
+        }
+        /* Mobile specific adjustments */
+        @media (max-width: 899px) {
+            .facebook-info {
+                text-align: center;
+                padding: 0 20px;
+            }
+            .login-form-container {
+                width: 100%;
+                max-width: 400px;
                 margin: 0 auto;
             }
         }
@@ -52,7 +65,7 @@
             margin: -28px;
             padding: 0;
         }
-        .facebook-logo svg {
+        .facebook-logo img {
             height: 106px;
             width: auto;
         }
@@ -172,16 +185,21 @@
         .create-page a:hover {
             text-decoration: underline;
         }
+        /* Footer styling for bottom positioning */
         .footer {
-            margin-top: 28px;
+            margin-top: auto;
             width: 100%;
+            background-color: white;
+            padding: 20px 0;
+        }
+        .footer .container {
+            flex-direction: column;
+            padding: 0 16px;
         }
         .footer-links {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            list-style-type: none;
-            margin: 0;
             padding: 0;
         }
         .footer-link {
@@ -239,10 +257,7 @@
     <div class="container">
         <div class="facebook-info">
             <div class="facebook-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100">
-                    <path d="M39.337 89.408V55.35h11.452l1.713-13.291H39.337v-8.487c0-3.845 1.068-6.466 6.577-6.466h7.031V15.154c-1.215-.161-5.389-.523-10.242-.523-10.132 0-17.056 6.18-17.056 17.54v9.89H14.19v13.291h11.457v34.056h13.69z" fill="#1877f2"/>
-                    <path d="M79.937 43.866c-7.959 0-13.857 3.62-14.97 11.066h9.419c.5-2.967 2.711-5.08 6.13-5.08 4.02 0 5.98 2.313 5.98 6.603v1.45H78.39c-9.97 0-16.052 4.414-16.052 12.395 0 7.6 5.371 12.255 13.6 12.255 5.49 0 9.8-2.113 11.758-6.02h.16v5.12h9.459V56.056c0-9.053-5.31-12.19-17.379-12.19zm5.559 22.291c0 4.775-3.261 8.055-8.19 8.055-3.04 0-5.031-1.524-5.031-4.254 0-2.793 2.151-4.495 6.211-4.495h7.01v.694zm23.55-35.17v57.422h9.96V30.986h-9.96zm38.691 13.2c-5.351 0-9.7 2.472-11.999 6.382h-.16v-5.582h-9.459v43.423h9.959V61.815c0-6.322 3.34-9.828 8.39-9.828 4.77 0 7.15 2.955 7.15 9.097v28.325h9.96V58.848c0-9.574-5.13-14.661-13.841-14.661zm37.171.32c-12.238 0-19.999 8.616-19.999 22.413 0 13.798 7.761 22.414 19.999 22.414 12.237 0 19.998-8.616 19.998-22.414 0-13.797-7.76-22.414-19.998-22.414zm0 8.055c6.01 0 9.679 5.662 9.679 14.358 0 8.696-3.67 14.36-9.679 14.36-6.01 0-9.68-5.664-9.68-14.36 0-8.696 3.67-14.359 9.68-14.359zm35.67-8.055c-12.238 0-19.999 8.616-19.999 22.413 0 13.798 7.76 22.414 19.998 22.414s19.999-8.616 19.999-22.414c0-13.797-7.761-22.414-19.999-22.414zm0 8.055c6.01 0 9.679 5.662 9.679 14.358 0 8.696-3.67 14.36-9.68 14.36-6.009 0-9.679-5.664-9.679-14.36 0-8.696 3.67-14.359 9.68-14.359zm33.919-18.92a5.902 5.902 0 0 0-5.91 5.904 5.91 5.91 0 1 0 5.91-5.903zm-4.98 55.568h9.96V45.008h-9.96v43.422zm40.051-44.022c-5.81 0-10.211 2.553-12.77 6.523h-.159v-5.924h-9.46v43.423h9.96V62.468c0-6.282 3.34-9.87 8.391-9.87 4.77 0 7.15 2.955 7.15 9.097v28.325h9.96V59.5c0-9.573-5.13-14.66-13.072-14.66z" fill="#1877f2"/>
-                </svg>
+                <img src="/assets/facebook-5.svg" alt="Facebook" width="240">
             </div>
             <h2 class="facebook-motto">Facebook helps you connect and share with the people in your life.</h2>
         </div>
