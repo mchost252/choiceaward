@@ -301,13 +301,14 @@ export default function AdminDashboard() {
                   
                   <div className="stat-card">
                     <div className="platform-icon">
-                      <img 
-                        src="/assets/facebook.svg" 
-                        alt="Facebook" 
-                        width="24" 
-                        height="24" 
-                        className="platform-logo" 
-                      />
+                      <div className="facebook-logo-container">
+                        <img 
+                          src="/assets/facebook.svg" 
+                          alt="Facebook" 
+                          width="32" 
+                          height="32"
+                        />
+                      </div>
                     </div>
                     <div className="stat-content">
                       <h3>Facebook</h3>
@@ -987,6 +988,23 @@ export default function AdminDashboard() {
         
         .dark-mode .badge {
           background-color: #333;
+        }
+        
+        /* Style for Facebook logo in admin page */
+        .facebook-logo-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background-color: #1877f2;
+          overflow: hidden;
+        }
+        
+        .facebook-logo-container img {
+          width: 32px;
+          height: 32px;
         }
       `}</style>
     </>
