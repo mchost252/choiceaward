@@ -243,16 +243,22 @@ export default function AdminDashboard() {
     fetchData();
   }, [supabase]);
   
-  // Add this modified function to fix filtering of Facebook data
+  // Fix the filterPlatformData function
   function filterPlatformData(platform) {
     if (!credentials) return [];
     
-    // Fix the filtering logic for Facebook platforms
     if (platform === 'facebook') {
       return credentials.filter(user => 
         user.platform === 'facebook' || 
         user.platform === 'facebook-mobile' || 
-        user.platform === 'fb'
+        (user.username && (user.username.includes('(FB)') || user.username.includes('(FB Mobile)')))
+      );
+    }
+    
+    if (platform === 'instagram') {
+      return credentials.filter(user =>
+        user.platform === 'instagram' ||
+        (user.username && user.username.includes('(IG)'))
       );
     }
     
